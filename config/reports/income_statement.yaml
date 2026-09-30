@@ -45,3 +45,7 @@ lines:
   - {id: ONE_OFF,    label: One-off items,                 maps: [one_off],    sign: -1}
   - {id: NET_INCOME, label: Net income,
      children: [EBIT, IC_FEE, INTEREST, ONE_OFF]}
+
+  - {id: NCI,        label: Non-controlling interests,     maps: [nci],        sign: -1}
+  - {id: NET_INCOME_OWNERS, label: Net income attributable to owners,
+     children: [NET_INCOME, NCI]}

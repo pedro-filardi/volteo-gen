@@ -18,16 +18,19 @@ import polars as pl
 def translate_gl(gl: pl.DataFrame, fx: pl.DataFrame, group_currency: str = "USD") -> pl.DataFrame:
     rates = fx.select(
         pl.col("from_currency").alias("currency"),
-        "period_key",
+        "fiscal_year",
+        pl.col("period_no").alias("_rate_period"),
         pl.col("rate_avg").alias("fx_rate_avg"),
         pl.col("rate_closing").alias("fx_rate_closing"),
         pl.col("rate_budget").alias("fx_rate_budget"),
-    ).unique(subset=["currency", "period_key"], keep="first")
+    ).unique(subset=["currency", "fiscal_year", "_rate_period"], keep="first")
 
-    out = gl.join(rates, on=["currency", "period_key"], how="left")
+    # P13 has no month of its own, so it shares its fiscal year's closing month (P12)
+    # rate. Group/ELIM rows are already in group currency and translate at 1.0.
+    out = gl.with_columns(
+        pl.col("period_no").clip(upper_bound=12).alias("_rate_period")
+    ).join(rates, on=["currency", "fiscal_year", "_rate_period"], how="left").drop("_rate_period")
 
-    # P13 shares its fiscal year's closing month rate; group/ELIM rows are already in
-    # group currency and translate at 1.0.
     out = out.with_columns(
         pl.col("fx_rate_avg").fill_null(1.0),
         pl.col("fx_rate_closing").fill_null(1.0),

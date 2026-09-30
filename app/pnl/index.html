@@ -1,0 +1,737 @@
+<title>Volteo P&amp;L Pack</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Newsreader:opsz,wght@6..72,500&display=swap">
+<style>
+:root {
+  --bg: #f4f6f8;
+  --panel: #ffffff;
+  --panel-2: #eef1f5;
+  --line: #dfe4ea;
+  --line-strong: #c3cbd5;
+  --ink: #141a22;
+  --ink-2: #4a5563;
+  --ink-3: #6f7a88;
+  --accent: #1d4f91;
+  --accent-soft: #e3ecf8;
+  --series-act: #2a78d6;
+  --series-bud: #eb6834;
+  --series-fc: #1baf7a;
+  --good: #0a7f2e;
+  --good-bg: #e2f3e7;
+  --bad: #c0352f;
+  --bad-bg: #fbe6e4;
+  --flat: #6f7a88;
+  --flat-bg: #eceff3;
+  --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-num: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --font-display: "Newsreader", Georgia, "Times New Roman", serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #11151b;
+    --panel: #181d25;
+    --panel-2: #1f2530;
+    --line: #2a313d;
+    --line-strong: #3a4352;
+    --ink: #edf1f6;
+    --ink-2: #b4bdca;
+    --ink-3: #8a94a3;
+    --accent: #8db8f0;
+    --accent-soft: #1f2d42;
+    --series-act: #3987e5;
+    --series-bud: #d95926;
+    --series-fc: #199e70;
+    --good: #4cc26f;
+    --good-bg: #16301f;
+    --bad: #f07a72;
+    --bad-bg: #3a1c1b;
+    --flat: #8a94a3;
+    --flat-bg: #232a35;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #11151b;
+  --panel: #181d25;
+  --panel-2: #1f2530;
+  --line: #2a313d;
+  --line-strong: #3a4352;
+  --ink: #edf1f6;
+  --ink-2: #b4bdca;
+  --ink-3: #8a94a3;
+  --accent: #8db8f0;
+  --accent-soft: #1f2d42;
+  --series-act: #3987e5;
+  --series-bud: #d95926;
+  --series-fc: #199e70;
+  --good: #4cc26f;
+  --good-bg: #16301f;
+  --bad: #f07a72;
+  --bad-bg: #3a1c1b;
+  --flat: #8a94a3;
+  --flat-bg: #232a35;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 14px/1.45 var(--font-body);
+  padding-inline: 16px;
+  padding-block: 20px 40px;
+}
+.wrap { max-width: 1240px; margin: 0 auto; display: grid; gap: 16px; }
+
+header.top { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 8px 24px; }
+.eyebrow { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); font-weight: 500; }
+h1 { font: 500 30px/1.1 var(--font-display); margin: 2px 0 0; letter-spacing: -.01em; text-wrap: balance; }
+.context { font-size: 13px; color: var(--ink-2); text-align: right; }
+.context strong { color: var(--ink); font-weight: 600; }
+
+.controls {
+  display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: end;
+  padding: 12px 14px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
+}
+.ctl { display: grid; gap: 4px; min-width: 0; }
+.ctl label, .ctl .lbl { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-3); font-weight: 500; }
+select {
+  font: 500 13px var(--font-body); color: var(--ink); background: var(--panel-2);
+  border: 1px solid var(--line); border-radius: 6px; padding: 6px 28px 6px 9px; max-width: 100%;
+  appearance: none; cursor: pointer;
+  background-image: linear-gradient(45deg, transparent 50%, var(--ink-3) 50%), linear-gradient(135deg, var(--ink-3) 50%, transparent 50%);
+  background-position: calc(100% - 13px) 55%, calc(100% - 9px) 55%;
+  background-size: 4px 4px; background-repeat: no-repeat;
+}
+select:focus-visible, button:focus-visible, tr[tabindex]:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; background: var(--panel-2); }
+.seg button {
+  font: 500 13px var(--font-body); color: var(--ink-2); background: transparent; border: 0;
+  padding: 6px 11px; cursor: pointer; border-right: 1px solid var(--line);
+}
+.seg button:last-child { border-right: 0; }
+.seg button[aria-pressed="true"] { background: var(--accent-soft); color: var(--accent); }
+.seg button:disabled { color: var(--ink-3); opacity: .5; cursor: not-allowed; }
+
+.notice {
+  font-size: 13px; color: var(--ink-2); background: var(--panel); border: 1px dashed var(--line-strong);
+  border-radius: 8px; padding: 10px 14px;
+}
+
+.kpis { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; }
+.kpi { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; display: grid; gap: 4px; align-content: start; }
+.kpi .name { font-size: 12px; color: var(--ink-2); font-weight: 500; }
+.kpi .val { font: 500 22px/1.2 var(--font-num); font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
+.kpi .cmp { font-size: 12px; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+.kpi .cmp .num { font-family: var(--font-num); }
+
+.chip {
+  display: inline-flex; align-items: center; gap: 4px; font: 500 12px var(--font-num);
+  padding: 1px 7px; border-radius: 999px; white-space: nowrap; font-variant-numeric: tabular-nums; justify-self: start;
+}
+.chip.good { color: var(--good); background: var(--good-bg); }
+.chip.bad { color: var(--bad); background: var(--bad-bg); }
+.chip.flat { color: var(--flat); background: var(--flat-bg); }
+
+.grid-main { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; min-width: 0; }
+.panel-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 4px 12px; padding: 12px 14px 8px; }
+.panel-head h2 { font-size: 15px; font-weight: 600; margin: 0; }
+.panel-head .sub { font-size: 12px; color: var(--ink-3); }
+.side { display: grid; gap: 16px; min-width: 0; }
+
+.table-scroll { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+th, td { padding: 6px 14px; white-space: nowrap; }
+thead th {
+  font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-3); font-weight: 500;
+  text-align: right; border-bottom: 1px solid var(--line-strong); position: sticky; top: 0; background: var(--panel);
+}
+thead th:first-child { text-align: left; }
+td.num { text-align: right; font-family: var(--font-num); font-size: 13px; }
+td.label { color: var(--ink); }
+tbody tr { border-bottom: 1px solid var(--line); }
+tbody tr.line { cursor: pointer; }
+tbody tr.line:hover { background: var(--panel-2); }
+tbody tr.selected { background: var(--accent-soft); }
+tbody tr.selected td.label { box-shadow: inset 3px 0 0 var(--accent); }
+tr.subtotal td { font-weight: 600; }
+tr.subtotal td.num { font-weight: 500; }
+tr.total td { border-top: 1px solid var(--line-strong); }
+tr.margin td { color: var(--ink-3); font-size: 12px; font-style: italic; padding-top: 2px; padding-bottom: 6px; }
+tr.margin td.num { font-size: 12px; }
+tr.margin { border-bottom-color: var(--line); }
+td .var-good { color: var(--good); }
+td .var-bad { color: var(--bad); }
+td .var-flat { color: var(--ink-3); }
+.indent-1 { padding-left: 26px; }
+.indent-2 { padding-left: 38px; }
+.muted { color: var(--ink-3); }
+
+.chart-wrap { position: relative; padding: 0 8px 8px; }
+svg { display: block; width: 100%; height: auto; overflow: visible; }
+svg text { font: 11px var(--font-body); fill: var(--ink-3); }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; padding: 0 14px 4px; font-size: 12px; color: var(--ink-2); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.sw { width: 12px; height: 12px; border-radius: 2px; display: inline-block; }
+.sw.line { height: 2px; border-radius: 1px; }
+.tip {
+  position: absolute; pointer-events: none; background: var(--panel); border: 1px solid var(--line-strong);
+  border-radius: 6px; padding: 8px 10px; font-size: 12px; box-shadow: 0 4px 16px rgb(0 0 0 / .12);
+  min-width: 170px; z-index: 5;
+}
+.tip .t { font-weight: 600; margin-bottom: 4px; }
+.tip .r { display: flex; justify-content: space-between; gap: 14px; }
+.tip .r b { font: 500 12px var(--font-num); }
+
+.conv td.num.best { font-weight: 600; }
+.conv td.err { font-size: 12px; }
+
+footer { font-size: 12px; color: var(--ink-3); display: grid; gap: 4px; max-width: 90ch; }
+footer code { font-family: var(--font-num); font-size: 11px; }
+
+@media (max-width: 1080px) {
+  .kpis { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .grid-main { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 620px) {
+  .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .context { text-align: left; }
+  th, td { padding: 6px 10px; }
+  h1 { font-size: 25px; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .chip, tbody tr { transition: background-color .15s ease; }
+}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <div class="eyebrow">Volteo Electronics Group · Management reporting</div>
+      <h1>Monthly P&amp;L pack</h1>
+    </div>
+    <div class="context" id="context">Loading data…</div>
+  </header>
+
+  <section class="controls" aria-label="Report filters">
+    <div class="ctl"><label for="f-entity">Entity</label><select id="f-entity"></select></div>
+    <div class="ctl"><label for="f-fy">Fiscal year</label><select id="f-fy"></select></div>
+    <div class="ctl"><label for="f-period">Period</label><select id="f-period"></select></div>
+    <div class="ctl"><span class="lbl" id="l-view">View</span>
+      <div class="seg" role="group" aria-labelledby="l-view" id="f-view">
+        <button type="button" data-v="M">Month</button><button type="button" data-v="QTD">QTD</button><button type="button" data-v="YTD">YTD</button><button type="button" data-v="FY">Full year</button>
+      </div>
+    </div>
+    <div class="ctl"><label for="f-cmp">Compare with</label>
+      <select id="f-cmp">
+        <option value="BUD_V2">Budget V2 (board approved)</option>
+        <option value="BUD_V1">Budget V1 (first pass)</option>
+        <option value="FC3+9">Forecast 3+9</option>
+        <option value="FC6+6">Forecast 6+6</option>
+        <option value="FC9+3">Forecast 9+3</option>
+        <option value="PY">Prior year actual</option>
+      </select>
+    </div>
+    <div class="ctl"><span class="lbl" id="l-ccy">Currency</span>
+      <div class="seg" role="group" aria-labelledby="l-ccy" id="f-ccy">
+        <button type="button" data-v="gc" title="Actuals at monthly average rates, plan at the budget rate">Reported</button><button type="button" data-v="cc" title="Every figure at this fiscal year's budget rate">Constant</button><button type="button" data-v="lc" title="Entity's own currency">Local</button>
+      </div>
+    </div>
+  </section>
+
+  <div class="notice" id="notice" hidden></div>
+
+  <section class="kpis" id="kpis" aria-label="Headline figures"></section>
+
+  <div class="grid-main">
+    <section class="panel" aria-labelledby="is-title">
+      <div class="panel-head">
+        <h2 id="is-title">Income statement</h2>
+        <span class="sub" id="is-sub"></span>
+      </div>
+      <div class="table-scroll">
+        <table id="is-table">
+          <thead><tr><th scope="col">Line</th><th scope="col">Actual</th><th scope="col" id="th-cmp">Budget</th><th scope="col">Var</th><th scope="col">Var %</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <div class="side">
+      <section class="panel" aria-labelledby="trend-title">
+        <div class="panel-head">
+          <h2 id="trend-title">Net revenue by month</h2>
+          <span class="sub" id="trend-sub"></span>
+        </div>
+        <div class="legend" id="legend"></div>
+        <div class="chart-wrap" id="chart"></div>
+      </section>
+
+      <section class="panel" aria-labelledby="conv-title">
+        <div class="panel-head">
+          <h2 id="conv-title">Full-year outlook</h2>
+          <span class="sub" id="conv-sub"></span>
+        </div>
+        <div class="table-scroll">
+          <table class="conv" id="conv-table"><thead></thead><tbody></tbody></table>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <footer>
+    <div>Figures in thousands. Revenue and profit read positive, costs negative, and costs are shown in brackets. A positive variance is favourable on every line.</div>
+    <div>Reported: actuals at monthly average rates, budget at the budget rate, forecast at actual rates for closed months and the budget rate for open months. Constant: every figure at the selected year's budget rate, so the variance carries no FX effect. Group totals include intercompany eliminations and non-controlling interests.</div>
+    <div>Synthetic data from <code>volteogen</code> (<code>rpt_income_statement</code>, built from <code>fact_pnl</code>).</div>
+  </footer>
+</div>
+
+<script>
+(() => {
+  const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  const KPI_LINES = [
+    { id: "NET_REV", name: "Net revenue" },
+    { id: "GROSS_PROFIT", name: "Gross margin", ratioOf: "NET_REV" },
+    { id: "EBITDA", name: "EBITDA" },
+    { id: "EBITDA", name: "EBITDA margin", ratioOf: "NET_REV", key: "EBITDA_M" },
+    { id: "NET_INCOME_OWNERS", name: "Net income to owners" },
+  ];
+  const MARGINS = { GROSS_PROFIT: "Gross margin", EBITDA: "EBITDA margin", EBIT: "EBIT margin" };
+  const CMP_LABEL = {
+    BUD_V2: "Budget V2", BUD_V1: "Budget V1", "FC3+9": "Fcst 3+9", "FC6+6": "Fcst 6+6", "FC9+3": "Fcst 9+3", PY: "Prior year",
+  };
+  const OUTLOOK = ["BUD_V1", "BUD_V2", "FC3+9", "FC6+6", "FC9+3"];
+  const OUTLOOK_LINES = ["NET_REV", "EBITDA", "NET_INCOME_OWNERS"];
+  const SHORT = { NET_REV: "Net revenue", EBITDA: "EBITDA", NET_INCOME_OWNERS: "Net income" };
+
+  let D, IDX, lineIx, entityIx, scenIx, entityCcy, rates;
+  const state = { entity: "GROUP", fy: null, period: 6, view: "YTD", cmp: "BUD_V2", ccy: "gc", line: "NET_REV" };
+
+  const $ = (id) => document.getElementById(id);
+  const store = {
+    get() { try { return JSON.parse(localStorage.getItem("pnl-pack") || "{}"); } catch { return {}; } },
+    set(v) { try { localStorage.setItem("pnl-pack", JSON.stringify(v)); } catch {} },
+  };
+
+  fetch("pnl.json").then((r) => {
+    if (!r.ok) throw new Error(`pnl.json returned ${r.status}`);
+    return r.json();
+  }).then(init).catch((err) => {
+    $("context").textContent = "";
+    const n = $("notice");
+    n.hidden = false;
+    n.textContent = `Could not load the data (${err.message}). Run the generator, then start the app with python app/pnl/serve.py.`;
+  });
+
+  function init(data) {
+    D = data;
+    lineIx = Object.fromEntries(D.lines.map((l, i) => [l.id, i]));
+    entityIx = Object.fromEntries(D.entity_ids.map((e, i) => [e, i]));
+    scenIx = Object.fromEntries(D.scenario_ids.map((s, i) => [s, i]));
+    entityCcy = Object.fromEntries(D.entities.map((e) => [e.id, e.currency]));
+    rates = {};
+    for (const r of D.budget_rates) rates[`${r.from_currency}|${r.fiscal_year}`] = r.rate_budget;
+
+    // Index: scenario|entity|fy|period -> Float64Array over lines, per measure (gc, lc).
+    IDX = new Map();
+    const R = D.rows, nL = D.lines.length;
+    for (let i = 0; i < R.s.length; i++) {
+      const k = `${R.s[i]}|${R.e[i]}|${R.fy[i]}|${R.p[i]}`;
+      let slot = IDX.get(k);
+      if (!slot) { slot = { gc: new Float64Array(nL), lc: new Float64Array(nL) }; IDX.set(k, slot); }
+      slot.gc[R.l[i]] += R.gc[i];
+      slot.lc[R.l[i]] += R.lc[i];
+    }
+
+    const fys = [...new Set(D.periods.map((p) => p.fy))].sort();
+    const planned = new Set(D.scenarios.filter((s) => s.type === "BUD").map((s) => s.fiscal_year));
+    const saved = store.get();
+    Object.assign(state, saved);
+    if (!fys.includes(state.fy)) state.fy = fys.find((f) => planned.has(f) && f >= fys[0] + 3) || fys[fys.length - 1];
+
+    const ent = $("f-entity");
+    ent.append(new Option("Group (consolidated)", "GROUP"));
+    for (const e of D.entities.filter((x) => x.consolidated)) ent.append(new Option(`${e.id} · ${e.name}`, e.id));
+    const fy = $("f-fy");
+    for (const f of fys) fy.append(new Option(`FY${f}${planned.has(f) ? "" : " (no budget)"}`, f));
+
+    ent.onchange = () => { state.entity = ent.value; if (state.entity === "GROUP" && state.ccy === "lc") state.ccy = "gc"; render(); };
+    fy.onchange = () => { state.fy = +fy.value; render(); };
+    $("f-period").onchange = (e) => { state.period = +e.target.value; render(); };
+    $("f-cmp").onchange = (e) => { state.cmp = e.target.value; render(); };
+    for (const b of $("f-view").querySelectorAll("button")) b.onclick = () => { state.view = b.dataset.v; render(); };
+    for (const b of $("f-ccy").querySelectorAll("button")) b.onclick = () => { if (!b.disabled) { state.ccy = b.dataset.v; render(); } };
+    let t; window.addEventListener("resize", () => { clearTimeout(t); t = setTimeout(renderChart, 120); });
+    render();
+  }
+
+  // ---- data access -------------------------------------------------------
+  function entitiesFor(sel) { return sel === "GROUP" ? D.entity_ids : [sel]; }
+
+  // Line vector for one scenario, entity selection, fiscal year, set of periods.
+  // Constant currency: local amounts x the budget rate of the SELECTED year, so a
+  // prior-year comparison is restated at this year's rates as well.
+  function vec(scenKey, fy, periods) {
+    const s = scenIx[scenKey];
+    const out = new Float64Array(D.lines.length);
+    if (s === undefined) return null;
+    let found = false;
+    for (const e of entitiesFor(state.entity)) {
+      const ei = entityIx[e];
+      const ccy = entityCcy[e] || D.group_currency;
+      const rate = ccy === D.group_currency ? 1 : (rates[`${ccy}|${state.fy}`] ?? 1);
+      for (const p of periods) {
+        const slot = IDX.get(`${s}|${ei}|${fy}|${p}`);
+        if (!slot) continue;
+        found = true;
+        const src = state.ccy === "gc" ? slot.gc : slot.lc;
+        const mult = state.ccy === "cc" ? rate : 1;
+        for (let l = 0; l < out.length; l++) out[l] += src[l] * mult;
+      }
+    }
+    return found ? out : null;
+  }
+
+  function periodsFor(view, p) {
+    if (view === "M") return [p];
+    if (view === "QTD") { const q0 = Math.floor((p - 1) / 3) * 3 + 1; return range(q0, p); }
+    if (view === "YTD") return p === 12 ? [...range(1, 12), 13] : range(1, p);
+    return [...range(1, 12), 13];
+  }
+  const range = (a, b) => Array.from({ length: b - a + 1 }, (_, i) => a + i);
+  const scenKeyFor = (cmp, fy) => (cmp === "PY" ? "ACT" : `${cmp}_FY${fy}`);
+
+  function actualAndComparison() {
+    const periods = periodsFor(state.view, state.period);
+    const act = vec("ACT", state.fy, periods);
+    const cmpFy = state.cmp === "PY" ? state.fy - 1 : state.fy;
+    const cmp = vec(scenKeyFor(state.cmp, state.fy), cmpFy, periods);
+    return { act, cmp, periods };
+  }
+
+  // ---- formatting ---------------------------------------------------------
+  const nf0 = new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 });
+  function fmtK(v) {
+    if (v === null || v === undefined || Number.isNaN(v)) return "–";
+    const k = Math.round(v / 1000);
+    if (k === 0) return "0";
+    return k < 0 ? `(${nf0.format(-k)})` : nf0.format(k);
+  }
+  function fmtShort(v) {
+    const a = Math.abs(v);
+    const s = a >= 1e6 ? `${(a / 1e6).toFixed(a >= 1e8 ? 0 : 1)}m` : `${Math.round(a / 1e3)}k`;
+    return v < 0 ? `(${s})` : s;
+  }
+  const pct = (v, d = 1) => `${(v * 100).toFixed(d)}%`;
+  function tone(v, scale) {
+    if (v === null || !Number.isFinite(v)) return "flat";
+    if (Math.abs(v) < scale) return "flat";
+    return v > 0 ? "good" : "bad";
+  }
+  const arrow = (t) => (t === "good" ? "▲" : t === "bad" ? "▼" : "•");
+  const toneWord = (t) => (t === "good" ? "favourable" : t === "bad" ? "unfavourable" : "on plan");
+  function varPct(a, c) { return c && Math.abs(c) > 0.5 ? (a - c) / Math.abs(c) : null; }
+
+  function periodName(fy, p) {
+    const row = D.periods.find((x) => x.fy === fy && x.p === p);
+    if (!row) return `P${String(p).padStart(2, "0")}`;
+    const [y, m] = row.key.split("-");
+    return `${MONTHS[+m - 1]} ${y}`;
+  }
+
+  // ---- render -------------------------------------------------------------
+  function render() {
+    store.set({ entity: state.entity, fy: state.fy, period: state.period, view: state.view, cmp: state.cmp, ccy: state.ccy, line: state.line });
+    syncControls();
+    const { act, cmp } = actualAndComparison();
+    renderContext();
+    renderNotice(act, cmp);
+    renderKpis(act, cmp);
+    renderTable(act, cmp);
+    renderChart();
+    renderOutlook();
+  }
+
+  function syncControls() {
+    $("f-entity").value = state.entity;
+    $("f-fy").value = state.fy;
+    const per = $("f-period");
+    per.innerHTML = "";
+    for (let p = 1; p <= 12; p++) per.append(new Option(`P${String(p).padStart(2, "0")} · ${periodName(state.fy, p)}`, p));
+    per.value = state.period;
+    per.disabled = state.view === "FY";
+    $("f-cmp").value = state.cmp;
+    for (const b of $("f-view").querySelectorAll("button")) b.setAttribute("aria-pressed", String(b.dataset.v === state.view));
+    for (const b of $("f-ccy").querySelectorAll("button")) {
+      b.disabled = b.dataset.v === "lc" && state.entity === "GROUP";
+      b.setAttribute("aria-pressed", String(b.dataset.v === state.ccy));
+    }
+    $("th-cmp").textContent = CMP_LABEL[state.cmp];
+  }
+
+  function currencyLabel() {
+    if (state.ccy === "lc") return `${entityCcy[state.entity]} k`;
+    return `${D.group_currency} k${state.ccy === "cc" ? " · constant FY" + state.fy + " budget rates" : ""}`;
+  }
+  function viewLabel() {
+    const end = periodName(state.fy, state.period);
+    return {
+      M: `${end}`,
+      QTD: `Quarter to ${end}`,
+      YTD: `Year to ${end}${state.period === 12 ? " incl. P13 close" : ""}`,
+      FY: `Full year incl. P13 close`,
+    }[state.view];
+  }
+
+  function renderContext() {
+    const ent = state.entity === "GROUP" ? "Group consolidated" : D.entities.find((e) => e.id === state.entity).name;
+    $("context").innerHTML = `<strong>${esc(ent)}</strong><br>FY${state.fy} · ${esc(viewLabel())} · ${esc(currencyLabel())}`;
+    $("is-sub").textContent = `${currencyLabel()} · Actual vs ${CMP_LABEL[state.cmp]}`;
+  }
+
+  function renderNotice(act, cmp) {
+    const n = $("notice");
+    const msgs = [];
+    if (!act) msgs.push("No actuals for this selection.");
+    if (!cmp) {
+      if (state.cmp === "PY") msgs.push(`No prior-year actuals for FY${state.fy - 1}.`);
+      else msgs.push(`No ${CMP_LABEL[state.cmp]} for FY${state.fy}. Budgets start in the second fiscal year because each one is built from the prior year's actuals.`);
+    }
+    if (state.entity === "UK01") msgs.push("UK01 was acquired part-way through the history. Periods before the acquisition have no activity.");
+    n.hidden = msgs.length === 0;
+    n.textContent = msgs.join(" ");
+  }
+
+  function renderKpis(act, cmp) {
+    const box = $("kpis");
+    box.innerHTML = "";
+    for (const k of KPI_LINES) {
+      const li = lineIx[k.id];
+      let a = act ? act[li] : null;
+      let c = cmp ? cmp[li] : null;
+      let valTxt, cmpTxt, chipTxt, t;
+      if (k.ratioOf) {
+        const ri = lineIx[k.ratioOf];
+        a = act && act[ri] ? act[li] / act[ri] : null;
+        c = cmp && cmp[ri] ? cmp[li] / cmp[ri] : null;
+        valTxt = a === null ? "–" : pct(a);
+        cmpTxt = c === null ? "–" : pct(c);
+        const d = a !== null && c !== null ? a - c : null;
+        t = tone(d, 0.001);
+        chipTxt = d === null ? "n/a" : `${d >= 0 ? "+" : "−"}${Math.abs(d * 100).toFixed(1)} pp`;
+      } else {
+        valTxt = a === null ? "–" : fmtShort(a);
+        cmpTxt = c === null ? "–" : fmtShort(c);
+        const vp = a !== null && c !== null ? varPct(a, c) : null;
+        t = tone(vp, 0.005);
+        chipTxt = vp === null ? "n/a" : `${vp >= 0 ? "+" : "−"}${Math.abs(vp * 100).toFixed(1)}%`;
+      }
+      const el = document.createElement("div");
+      el.className = "kpi";
+      el.innerHTML = `<div class="name">${esc(k.name)}</div>
+        <div class="val">${esc(valTxt)}</div>
+        <span class="chip ${t}" aria-label="${toneWord(t)} ${esc(chipTxt)}">${arrow(t)} ${esc(chipTxt)}</span>
+        <div class="cmp">${esc(CMP_LABEL[state.cmp])} <span class="num">${esc(cmpTxt)}</span></div>`;
+      box.append(el);
+    }
+  }
+
+  function renderTable(act, cmp) {
+    const body = $("is-table").querySelector("tbody");
+    body.innerHTML = "";
+    const nr = lineIx.NET_REV;
+    for (const line of D.lines) {
+      const li = lineIx[line.id];
+      const a = act ? act[li] : null;
+      const c = cmp ? cmp[li] : null;
+      if (Math.abs(a || 0) < 500 && Math.abs(c || 0) < 500 && !line.subtotal) continue;
+      const v = a !== null && c !== null ? a - c : null;
+      const vp = v !== null ? varPct(a, c) : null;
+      const t = tone(vp === null ? v : vp, vp === null ? 500 : 0.005);
+      const tr = document.createElement("tr");
+      tr.className = "line" + (line.subtotal ? " subtotal" : "") + (line.subtotal ? " total" : "") + (line.id === state.line ? " selected" : "");
+      tr.tabIndex = 0;
+      tr.setAttribute("aria-label", `${line.label}: show monthly trend`);
+      const ind = line.subtotal ? "" : " indent-1";
+      tr.innerHTML = `<td class="label${ind}">${esc(line.label)}</td>
+        <td class="num">${fmtK(a)}</td>
+        <td class="num muted">${fmtK(c)}</td>
+        <td class="num"><span class="var-${t}">${v === null ? "–" : fmtK(v)}</span></td>
+        <td class="num"><span class="var-${t}" aria-label="${toneWord(t)}">${vp === null ? (v === null ? "–" : "n/m") : `${arrow(t)} ${(vp * 100).toFixed(1)}%`}</span></td>`;
+      const pick = () => { state.line = line.id; render(); };
+      tr.onclick = pick;
+      tr.onkeydown = (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); pick(); } };
+      body.append(tr);
+
+      if (MARGINS[line.id]) {
+        const ma = act && act[nr] ? a / act[nr] : null;
+        const mc = cmp && cmp[nr] ? c / cmp[nr] : null;
+        const d = ma !== null && mc !== null ? ma - mc : null;
+        const mt = tone(d, 0.001);
+        const m = document.createElement("tr");
+        m.className = "margin";
+        m.innerHTML = `<td class="label indent-1">${MARGINS[line.id]}</td>
+          <td class="num">${ma === null ? "–" : pct(ma)}</td>
+          <td class="num">${mc === null ? "–" : pct(mc)}</td>
+          <td class="num"><span class="var-${mt}">${d === null ? "–" : `${d >= 0 ? "+" : "−"}${Math.abs(d * 100).toFixed(1)} pp`}</span></td>
+          <td class="num"></td>`;
+        body.append(m);
+      }
+    }
+  }
+
+  // ---- trend chart ---------------------------------------------------------
+  function monthly(scenKey, fy) {
+    const li = lineIx[state.line];
+    return range(1, 12).map((p) => {
+      const v = vec(scenKey, fy, [p]);
+      return v ? v[li] : null;
+    });
+  }
+
+  function renderChart() {
+    if (!D) return;
+    const label = D.lines[lineIx[state.line]].label;
+    $("trend-title").textContent = `${label} by month`;
+    $("trend-sub").textContent = `FY${state.fy} · ${currencyLabel()}`;
+
+    const fcVer = state.cmp.startsWith("FC") ? state.cmp : "FC9+3";
+    const series = [
+      { key: "act", name: "Actual", color: "var(--series-act)", kind: "bar", data: monthly("ACT", state.fy) },
+      { key: "bud", name: "Budget V2", color: "var(--series-bud)", kind: "line", data: monthly(`BUD_V2_FY${state.fy}`, state.fy) },
+      { key: "fc", name: `Forecast ${fcVer.slice(2)}`, color: "var(--series-fc)", kind: "line", dash: true, data: monthly(`${fcVer}_FY${state.fy}`, state.fy) },
+    ].filter((s) => s.data.some((v) => v !== null));
+
+    $("legend").innerHTML = series.map((s) =>
+      `<span><i class="sw${s.kind === "line" ? " line" : ""}" style="background:${s.color}"></i>${esc(s.name)}</span>`).join("");
+
+    const box = $("chart");
+    const W = Math.max(300, box.clientWidth - 16), H = 240;
+    const m = { t: 12, r: 8, b: 26, l: 52 };
+    const iw = W - m.l - m.r, ih = H - m.t - m.b;
+    const vals = series.flatMap((s) => s.data.filter((v) => v !== null));
+    let lo = Math.min(0, ...vals), hi = Math.max(0, ...vals);
+    if (lo === hi) hi = lo + 1;
+    const ticks = niceTicks(lo, hi, 5);
+    lo = Math.min(lo, ticks[0]); hi = Math.max(hi, ticks[ticks.length - 1]);
+    const y = (v) => m.t + ih - ((v - lo) / (hi - lo)) * ih;
+    const band = iw / 12;
+    const x = (i) => m.l + band * i + band / 2;
+    const bw = Math.max(6, Math.min(26, band * 0.55));
+
+    let svg = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(label)} by month, FY${state.fy}">`;
+    for (const t of ticks) {
+      svg += `<line x1="${m.l}" x2="${W - m.r}" y1="${y(t)}" y2="${y(t)}" stroke="var(--line)" stroke-width="1"${t === 0 ? ' stroke="var(--line-strong)"' : ""}/>`;
+      svg += `<text x="${m.l - 8}" y="${y(t) + 4}" text-anchor="end">${fmtShort(t)}</text>`;
+    }
+    svg += `<line x1="${m.l}" x2="${W - m.r}" y1="${y(0)}" y2="${y(0)}" stroke="var(--line-strong)" stroke-width="1"/>`;
+    for (let i = 0; i < 12; i++) {
+      if (W < 480 && i % 2) continue;
+      const name = periodName(state.fy, i + 1).split(" ")[0];
+      svg += `<text x="${x(i)}" y="${H - 8}" text-anchor="middle">${name}</text>`;
+    }
+    for (const s of series) {
+      if (s.kind === "bar") {
+        s.data.forEach((v, i) => {
+          if (v === null) return;
+          const y0 = y(0), y1 = y(v);
+          const top = Math.min(y0, y1), h = Math.max(1, Math.abs(y1 - y0));
+          const r = Math.min(4, h / 2, bw / 2);
+          svg += barPath(x(i) - bw / 2, top, bw, h, r, v >= 0, s.color);
+        });
+      } else {
+        let d = "", pen = false;
+        s.data.forEach((v, i) => {
+          if (v === null) { pen = false; return; }
+          d += `${pen ? "L" : "M"}${x(i).toFixed(1)},${y(v).toFixed(1)}`;
+          pen = true;
+        });
+        svg += `<path d="${d}" fill="none" stroke="${s.color}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"${s.dash ? ' stroke-dasharray="5 4"' : ""}/>`;
+        s.data.forEach((v, i) => {
+          if (v !== null) svg += `<circle cx="${x(i)}" cy="${y(v)}" r="3" fill="${s.color}" stroke="var(--panel)" stroke-width="2"/>`;
+        });
+      }
+    }
+    svg += `<line id="xhair" x1="0" x2="0" y1="${m.t}" y2="${m.t + ih}" stroke="var(--ink-3)" stroke-width="1" stroke-dasharray="2 3" visibility="hidden"/>`;
+    for (let i = 0; i < 12; i++) svg += `<rect data-i="${i}" x="${m.l + band * i}" y="${m.t}" width="${band}" height="${ih}" fill="transparent"/>`;
+    svg += `</svg><div class="tip" id="tip" hidden></div>`;
+    box.innerHTML = svg;
+
+    const tip = $("tip"), xh = $("xhair");
+    for (const r of box.querySelectorAll("rect[data-i]")) {
+      const i = +r.dataset.i;
+      r.addEventListener("mouseenter", () => {
+        xh.setAttribute("x1", x(i)); xh.setAttribute("x2", x(i)); xh.setAttribute("visibility", "visible");
+        tip.innerHTML = `<div class="t">P${String(i + 1).padStart(2, "0")} · ${periodName(state.fy, i + 1)}</div>` +
+          series.map((s) => `<div class="r"><span><i class="sw${s.kind === "line" ? " line" : ""}" style="background:${s.color}"></i> ${esc(s.name)}</span><b>${fmtK(s.data[i])}</b></div>`).join("");
+        tip.hidden = false;
+        const px = (x(i) / W) * box.clientWidth;
+        tip.style.left = `${Math.min(Math.max(8, px + 12), box.clientWidth - tip.offsetWidth - 8)}px`;
+        tip.style.top = `8px`;
+      });
+      r.addEventListener("mouseleave", () => { tip.hidden = true; xh.setAttribute("visibility", "hidden"); });
+    }
+  }
+
+  function barPath(x0, top, w, h, r, up, color) {
+    // Rounded at the data end only; square on the baseline.
+    if (up) return `<path d="M${x0},${top + h}V${top + r}Q${x0},${top} ${x0 + r},${top}H${x0 + w - r}Q${x0 + w},${top} ${x0 + w},${top + r}V${top + h}Z" fill="${color}"/>`;
+    const b = top + h;
+    return `<path d="M${x0},${top}V${b - r}Q${x0},${b} ${x0 + r},${b}H${x0 + w - r}Q${x0 + w},${b} ${x0 + w},${b - r}V${top}Z" fill="${color}"/>`;
+  }
+
+  function niceTicks(lo, hi, n) {
+    const span = hi - lo;
+    const step0 = span / n;
+    const mag = Math.pow(10, Math.floor(Math.log10(step0)));
+    const step = [1, 2, 2.5, 5, 10].map((f) => f * mag).find((s) => span / s <= n) || 10 * mag;
+    const start = Math.floor(lo / step) * step;
+    const out = [];
+    for (let v = start; v <= hi + step * 0.001; v += step) out.push(Math.round(v / step) * step);
+    if (out[out.length - 1] < hi) out.push(out[out.length - 1] + step);
+    return out;
+  }
+
+  // ---- forecast convergence ------------------------------------------------
+  function renderOutlook() {
+    const full = [...range(1, 12), 13];
+    const actual = vec("ACT", state.fy, full);
+    const cols = OUTLOOK.map((v) => ({ v, vec: vec(`${v}_FY${state.fy}`, state.fy, full) })).filter((c) => c.vec);
+    $("conv-sub").textContent = `FY${state.fy} · ${currencyLabel()} · error vs actual`;
+    const head = $("conv-table").querySelector("thead");
+    const body = $("conv-table").querySelector("tbody");
+    if (!cols.length) {
+      head.innerHTML = "";
+      body.innerHTML = `<tr><td class="muted">No budget or forecast for FY${state.fy}.</td></tr>`;
+      return;
+    }
+    const lis = OUTLOOK_LINES.map((id) => lineIx[id]);
+    head.innerHTML = `<tr><th scope="col">Scenario</th>${lis.map((li) => `<th scope="col">${esc(SHORT[D.lines[li].id] || D.lines[li].label)}</th>`).join("")}</tr>`;
+    const bestFor = lis.map((li) => {
+      const a = actual ? actual[li] : null;
+      let bi = -1, be = Infinity;
+      cols.forEach((c, i) => { if (a !== null) { const e = Math.abs(c.vec[li] - a); if (e < be) { be = e; bi = i; } } });
+      return bi;
+    });
+    const rows = cols.map((c, i) => {
+      const cells = lis.map((li, j) => {
+        const a = actual ? actual[li] : null;
+        const e = a !== null && Math.abs(a) > 0.5 ? (c.vec[li] - a) / Math.abs(a) : null;
+        const et = e === null ? "flat" : Math.abs(e) <= 0.03 ? "good" : Math.abs(e) >= 0.15 ? "bad" : "flat";
+        return `<td class="num${bestFor[j] === i ? " best" : ""}">${fmtShort(c.vec[li])} <span class="err var-${et}">${e === null ? "" : `${e >= 0 ? "+" : "−"}${Math.abs(e * 100).toFixed(0)}%`}</span></td>`;
+      }).join("");
+      return `<tr><td class="label">${esc(CMP_LABEL[c.v])}</td>${cells}</tr>`;
+    });
+    rows.push(`<tr class="subtotal total"><td class="label">Actual</td>${lis.map((li) => `<td class="num">${actual ? fmtShort(actual[li]) : "–"}</td>`).join("")}</tr>`);
+    body.innerHTML = rows.join("");
+  }
+
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  }
+})();
+</script>

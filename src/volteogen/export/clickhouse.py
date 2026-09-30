@@ -37,6 +37,10 @@ _TABLE_ENGINES = {
         "partition_by": "fiscal_year",
         "order_by": "(flow_key, period_key, ic_txn_id)",
     },
+    "fact_pnl": {
+        "partition_by": "(scenario_type, fiscal_year)",
+        "order_by": "(scenario_key, entity, period_no, group_account)",
+    },
     "fact_elimination": {
         "partition_by": "fiscal_year",
         "order_by": "(account_code, period_key, ic_txn_id)",

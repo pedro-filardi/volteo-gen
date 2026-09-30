@@ -12,7 +12,7 @@ actual lands nearer +3%, holds price flat, and translates at the fixed budget FX
 variances have a *story* — volume, price, FX, mix — instead of being noise.
 
 **Forecasts converge.** An FC3+9 copies three closed ACT months verbatim into the
-forecast scenario and blends budget with run-rate for the rest. By FC9+3 nine months are
+forecast scenario and re-phases the budget by year-to-date actual/budget for the rest. By FC9+3 nine months are
 actual, so forecast accuracy visibly improves through the year — a measurable property.
 """
 
@@ -145,10 +145,18 @@ def build_forecast(
     if actual.height == 0:
         return pl.DataFrame()
 
+    board_version = cfg.get("scenarios.budget_versions")[-1]
     rows: list[dict] = []
     for scenario in forecast_scenarios.to_dicts():
         target_fy = int(scenario["fiscal_year"])
         closed = int(scenario["closed_months"])
+        year_budget = budget.filter(
+            (pl.col("fiscal_year") == target_fy) & (pl.col("version") == board_version)
+        )
+        # A forecast re-phases a budget; with no budget for the year (the first FY has
+        # no prior-year basis) there is nothing to re-phase, so no forecast is issued.
+        if year_budget.height == 0:
+            continue
 
         # Closed months: an exact copy of actuals at budget grain.
         closed_actual = actual.filter(
@@ -171,30 +179,36 @@ def build_forecast(
                 }
             )
 
-        # Open months: blend budget with the run-rate implied by closed actuals. The
-        # more months are closed, the more weight the run-rate carries — which is why
-        # forecast accuracy improves through the year.
+        # Open months: the board budget re-phased by year-to-date performance. The
+        # closed months' actual/budget ratio is applied to each open budget month, so
+        # the budget's seasonality survives (a flat monthly run-rate would extrapolate
+        # the Christmas peak across the whole year). The more months are closed, the
+        # more weight the observed ratio carries — which is why forecast accuracy
+        # improves through the year.
         run_rate_weight = min(0.85, 0.35 + 0.06 * closed)
-        open_budget = budget.filter(
-            (pl.col("fiscal_year") == target_fy)
-            & (pl.col("period_no") > closed)
-            & (pl.col("version") == cfg.get("scenarios.budget_versions")[-1])
+        grain = ["entity", "group_account", "account_class", "product_node_id"]
+        open_budget = year_budget.filter(pl.col("period_no") > closed)
+        ytd_budget = (
+            year_budget.filter(pl.col("period_no") <= closed)
+            .group_by(grain).agg(pl.col("amount").sum().alias("ytd_budget"))
         )
         run_rate = (
-            closed_actual.group_by(["entity", "group_account", "account_class", "product_node_id"])
-            .agg((pl.col("amount").sum() / max(1, closed)).alias("monthly_run_rate"))
+            closed_actual.group_by(grain).agg(pl.col("amount").sum().alias("ytd_actual"))
+            .join(ytd_budget, on=grain, how="inner")
+            .filter(pl.col("ytd_budget").abs() > 0.01)
+            .with_columns(
+                (pl.col("ytd_actual") / pl.col("ytd_budget")).clip(0.5, 1.5).alias("ytd_ratio")
+            )
         )
-        blended = open_budget.join(
-            run_rate, on=["entity", "group_account", "account_class", "product_node_id"], how="left"
-        )
+        blended = open_budget.join(run_rate.select(grain + ["ytd_ratio"]), on=grain, how="left")
         for row in blended.to_dicts():
             budget_amount = float(row["amount"])
-            rate = row.get("monthly_run_rate")
-            if rate is None:
+            ratio = row.get("ytd_ratio")
+            if ratio is None:
                 amount = budget_amount
             else:
-                amount = (
-                    run_rate_weight * float(rate) + (1.0 - run_rate_weight) * budget_amount
+                amount = budget_amount * (
+                    run_rate_weight * float(ratio) + (1.0 - run_rate_weight)
                 ) * float(rng.uniform(0.97, 1.03))
             rows.append(
                 {

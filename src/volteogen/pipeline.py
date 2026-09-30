@@ -70,6 +70,7 @@ from .defects import (
     inject_subledger_reconciling_item,
     inject_unmapped_accounts,
 )
+from .facts.pnl import build_income_statement, build_pnl
 from .facts.scenarios import build_budget, build_forecast, build_variance_bridge
 from .facts.subledger import build_sales_lines, gross_to_net_waterfall
 from .rng import SeedBank
@@ -394,6 +395,18 @@ def build_dataset(
             "fact_bridge_variance",
             build_variance_bridge(gl, budget, dataset["map_local_to_group"], cfg),
         )
+        # The first fiscal year has no prior-year basis, so no budget (and therefore no
+        # forecast) exists for it. Keep only scenarios that actually carry data.
+        planned = set()
+        for name in ("fact_budget", "fact_forecast"):
+            if dataset[name].height:
+                planned |= set(dataset[name]["scenario_key"].unique().to_list())
+        dataset.add(
+            "dim_scenario",
+            dataset["dim_scenario"].filter(
+                (pl.col("scenario_type") == "ACT") | pl.col("scenario_key").is_in(list(planned))
+            ),
+        )
 
 
         # Eliminations and topside journals are appended to fact_gl as their own
@@ -434,6 +447,24 @@ def build_dataset(
                     f"account fallback: {entity} has no {account_class} account; "
                     f"postings routed to {fallback}"
                 )
+
+    # -- P&L cube: ACT, BUD and FC on one grain and one currency policy ----------
+    with step("p&l cube"):
+        pnl = dataset.add(
+            "fact_pnl",
+            build_pnl(
+                cfg, dataset["fact_gl"], dataset["fact_budget"], dataset["fact_forecast"],
+                dataset["map_local_to_group"], dataset["dim_entity"], dataset["dim_scenario"],
+                calendar, dataset["dim_fx_rate"],
+            ),
+        )
+        if "dim_report_line" in dataset.tables:
+            dataset.add(
+                "rpt_income_statement",
+                build_income_statement(
+                    pnl, dataset["dim_report_line"], dataset["bridge_report_line"]
+                ),
+            )
 
     # Volume reporting. NOTE: the spec's back-solver (config `volume.target_gl_rows`)
     # is NOT implemented — the generator does not yet adjust grain density to hit the

@@ -410,6 +410,37 @@ def test_forecast_closed_months_are_copies(dataset):
     assert values.get("FC9+3", 0) > values.get("FC3+9", 0)
 
 
+def test_pnl_cube_holds_every_scenario_type(dataset):
+    pnl = dataset["fact_pnl"]
+    assert set(pnl["scenario_type"].unique().to_list()) == {"ACT", "BUD", "FC"}
+    assert pnl.filter(pl.col("amount_gc").is_null()).height == 0
+
+
+def test_pnl_plan_is_translated_at_budget_rates(dataset):
+    """Budget and open forecast months translate at the budget rate, so their
+    reported and constant-currency measures are identical; actuals differ by FX."""
+    pnl = dataset["fact_pnl"].filter(pl.col("currency") != "USD")
+    plan = pnl.filter((pl.col("scenario_type") != "ACT") & ~pl.col("is_closed_month"))
+    assert float((plan["amount_gc"] - plan["amount_gc_cc"]).abs().max()) < 0.01
+    actual = pnl.filter(pl.col("scenario_type") == "ACT")
+    assert float((actual["amount_gc"] - actual["amount_gc_cc"]).abs().max()) > 1.0
+
+
+def test_plan_carries_its_own_eliminations(dataset):
+    """A consolidated plan that just summed entities would overstate group revenue."""
+    pnl = dataset["fact_pnl"]
+    plan_elim = pnl.filter((pl.col("scenario_type") == "BUD") & (pl.col("entity") == "ELIM"))
+    assert plan_elim.height > 0
+
+
+def test_income_statement_subtotals_add_up(dataset):
+    rpt = dataset["rpt_income_statement"].filter(pl.col("scenario_type") == "ACT")
+    wide = rpt.group_by("line_id").agg(pl.col("amount_gc").sum())
+    value = dict(zip(wide["line_id"].to_list(), wide["amount_gc"].to_list()))
+    assert abs(value["NET_REV"] - value["REV_GROSS"] - value["REV_RED"]) < 1.0
+    assert abs(value["NET_INCOME_OWNERS"] - value["NET_INCOME"] - value["NCI"]) < 1.0
+
+
 def test_variance_bridge_ties_exactly(dataset):
     bridge = dataset["fact_bridge_variance"]
     assert bridge.height > 0

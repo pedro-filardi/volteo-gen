@@ -592,6 +592,50 @@ def v10_variance_bridge(dataset) -> CheckResult:
     )
 
 
+# -- V13 ----------------------------------------------------------------------
+def v13_pnl_cube(dataset) -> CheckResult:
+    """fact_pnl actuals tie to the books, and every plan row is translated."""
+    pnl = dataset.tables.get("fact_pnl")
+    if pnl is None or pnl.height == 0:
+        return CheckResult("V13", "P&L cube ties to the ledger", True,
+                           "no P&L cube generated", skipped=True)
+
+    keys = ["entity", "fiscal_year", "period_no"]
+    books = (
+        dataset["fact_gl"]
+        .filter(
+            (pl.col("scenario_key") == "ACT")
+            & (pl.col("ledger") != "TAX")
+            & (pl.col("account_class") != "balance_sheet")
+        )
+        .group_by(keys).agg(pl.col("amount_gc_actual_rates").sum().alias("books"))
+    )
+    cube = (
+        pnl.filter((pl.col("scenario_key") == "ACT") & (pl.col("account_class") != "nci"))
+        .group_by(keys).agg(pl.col("amount_gc").sum().alias("cube"))
+    )
+    joined = books.join(cube, on=keys, how="full", coalesce=True).with_columns(
+        (pl.col("books").fill_null(0.0) - pl.col("cube").fill_null(0.0)).abs().alias("delta")
+    )
+    worst = float(joined["delta"].max() or 0.0)
+    problems = []
+    if joined.filter(pl.col("delta") > 1.0).height:
+        problems.append(f"ACT does not tie to fact_gl (max delta {worst:,.2f})")
+    untranslated = pnl.filter(pl.col("amount_gc").is_null() | pl.col("amount_gc_cc").is_null()).height
+    if untranslated:
+        problems.append(f"{untranslated} rows have no group-currency amount")
+
+    scenarios = pnl["scenario_key"].n_unique()
+    unmapped = pnl.filter(pl.col("group_account") == "UNMAPPED").height
+    return CheckResult(
+        "V13", "P&L cube ties to the ledger", not problems,
+        f"{joined.height:,} entity/periods tie to fact_gl (max delta {worst:.4f}); "
+        f"{scenarios} scenarios translated; {unmapped} UNMAPPED rows kept visible"
+        if not problems else "; ".join(problems),
+        rows_examined=pnl.height, max_abs_delta=worst,
+    )
+
+
 def _skipped(check: str, name: str, reason: str) -> CheckResult:
     return CheckResult(check, name, True, reason, skipped=True)
 
@@ -610,4 +654,5 @@ def run_all(dataset) -> ValidationReport:
     report.add(v10_variance_bridge(dataset))
     report.add(v11_irregularity(dataset))
     report.add(v12_margins(dataset))
+    report.add(v13_pnl_cube(dataset))
     return report
