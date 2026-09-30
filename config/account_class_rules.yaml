@@ -1,0 +1,92 @@
+# Local account -> account_class, where account_class is the key of the dimensional
+# applicability matrix (config/meta_account_dimensionality.csv).
+#
+# Encoded as DATA, per spec 5: the generator and the validator both read this, so the
+# rule that decides "payroll has no product dimension" is stated once.
+#
+# Matching is LONGEST-PREFIX-WINS on the local account code, which handles charts that
+# mix code lengths (PGC has 3-, 4-, 5- and 6-digit accounts). `default_pl` / `default_bs`
+# catch everything else.
+#
+# Every prefix below was verified against the actual seed account names; the comment on
+# each line is the real name of the first account the prefix matches.
+
+SKR03:            # German SKR03 — Kontenklassen
+  default_bs: balance_sheet
+  default_pl: other_opex
+  prefixes:
+    "21": interest            # 2100 Interest and similar expenses
+    "22": tax                 # 2200 corporate taxes
+    "27": fx_result
+    "30": cogs_standard       # 3000 Raw materials, consumables and supplies
+    "31": cogs_standard
+    "32": cogs_standard
+    "33": cogs_standard
+    "34": cogs_standard
+    "35": cogs_standard
+    "36": cogs_standard
+    "37": cogs_standard
+    "38": cogs_standard
+    "39": cogs_standard
+    "395": cogs_variance      # 3950/3955 Bestandsveraenderungen — where German
+    "396": cogs_variance      #   production/absorption differences actually land
+    "41": payroll             # 4100 Wages and salaries
+    "42": facilities          # 4200 Occupancy costs
+    "44": facilities
+    "46": marketing           # 4600 Advertising expenses
+    "48": depreciation        # 4820 Depreciation
+    "49": other_opex
+    "87": revenue_reduction   # 8700 Sales allowances
+    "8":  revenue_trade       # 8100/8400 Erloese
+
+PGC:              # Spanish Plan General de Contabilidad
+  default_bs: balance_sheet
+  default_pl: other_opex
+  prefixes:
+    "600": cogs_standard      # 600 Merchandise purchased
+    "601": cogs_standard
+    "602": cogs_standard
+    "607": cogs_standard
+    "621": facilities         # 621 Leases and royalties
+    "627": marketing          # 627 Advertising, publicity and public relations
+    "63":  tax                # 6300 Current tax
+    "64":  payroll            # 640 Salaries and wages
+    "66":  interest           # 6610 Interest on non-current bonds
+    "68":  depreciation       # 680 Amortisation of intangible assets
+    "706": revenue_reduction  # 7060 Prompt payment discounts on merchandise
+    "707": revenue_reduction
+    "708": revenue_reduction  # 7080 Returns of merchandise sold
+    "709": revenue_reduction
+    "70":  revenue_trade      # 7000/7001/7002 domestic / intra-community / export
+    "76":  interest           # 7600 financial income
+
+SAGE50:           # UK nominal ledger (Sage-standard)
+  default_bs: balance_sheet
+  default_pl: other_opex
+  prefixes:
+    "4009": revenue_reduction # 4009 Discounts Allowed
+    "4":    revenue_trade     # 4000 Sales Type A
+    "5":    cogs_standard     # 5000 Materials Purchased
+    "62":   marketing         # 6200 Sales Promotions
+    "6":    cogs_standard     # direct expenses
+    "70":   payroll           # 7000 Gross Wages
+    "71":   facilities        # 7100 Rent
+    "72":   facilities        # heat, light and power
+    "80":   depreciation      # 8000 Depreciation
+    "79":   interest          # 7900 Bank Interest Paid, 7903 Loan Interest Paid
+    "9001": tax               # 9001 Taxation
+
+US_ERP:           # Business Central US chart
+  default_bs: balance_sheet
+  default_pl: other_opex
+  prefixes:
+    "409":  revenue_reduction # 40910 Discounts and Allowances
+    "4":    revenue_trade     # 40xxx sales
+    "505":  cogs_variance     # 50500 Cost of Variances — plant level, no product
+    "5":    cogs_standard     # 50xxx cost of goods sold
+    "601":  facilities        # 60110 Rent / Leases
+    "63":   marketing         # 63110 Advertisement Development
+    "672":  interest          # 67200 Interest Expenses
+    "73":   payroll           # 73100 Health Insurance and other benefits
+    "81":   depreciation      # 81000 Depreciation, Land and Property
+    "82":   depreciation      # 82000 Depreciation, Fixed Assets

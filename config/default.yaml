@@ -1,0 +1,100 @@
+# Volteo Electronics Group — master generator config.
+# Every knob here is normative: the engine reads it, never hardcodes it.
+# Presets in config/presets/*.yaml are deep-merged OVER this file, and any field can
+# be overridden again on the CLI (--set cardinality.products.target_leaves=400).
+
+seed: 42
+scale_preset: M
+industry_pack: consumer_electronics
+
+period:
+  fiscal_year_end: "06-30"      # REALISM: non-calendar FY (Jul-Jun)
+  start: 2023-07                # first fiscal period (P01 of FY2024)
+  months: 36
+  period13: true                # P13 close-adjustment period per FY
+
+entities: [US01, DE01, ES01, UK01]
+
+cardinality:
+  products:
+    target_leaves: 240
+    depth: {min: 2, max: 5, mode: 5}
+    fanout: {dist: zipf, a: 1.4, min: 1, max: 12}
+    skip_level_share: 0.07
+  markets:
+    target_leaves: 23
+    depth: {min: 2, max: 4, mode: 3}
+    fanout: {dist: lognormal, mu: 1.0, sigma: 0.6}
+    skip_level_share: 0.05
+  customers:
+    named_per_entity: 12
+    tail_share: 0.35            # revenue share landing in OTHER-* buckets
+    top1_share: {min: 0.15, max: 0.30}
+  cost_centers_total: 35
+  subledger:
+    # Invoice lines per (sku x market x month) driver row. This is spec 2's
+    # sub-ledger density lever: the ledger stays trial-balance grain, and volume
+    # comes from documents, exactly as a real system does.
+    lines_per_driver_min: 1
+    lines_per_driver_max: 4
+  profit_centers: 9
+  explosion:                    # CoA explosion knobs (US01 only)
+    revenue_axes: [product_line, channel]
+    revenue_coverage: 0.75
+    payroll_axis: department
+    payroll_coverage: 0.85
+    facility_axis: site
+    facility_coverage: 0.80
+    adhoc_accounts: 4
+
+scenarios:
+  budget_versions: [BUD_V1, BUD_V2]        # V2 = board-approved, differs ~3-5%
+  forecast_cycles: [FC3+9, FC6+6, FC9+3]   # per fiscal year
+  ledgers: [IFRS, LOCAL, TAX]              # parallel ledgers, core entities only
+  parallel_ledger_entities: [US01, DE01]
+
+volume:
+  target_gl_rows: 2_000_000     # generator back-solves subledger density to hit +/-20%
+  tolerance: 0.20
+
+fx:
+  pairs: [EURUSD, GBPUSD]
+  group_currency: USD
+  monthly_vol: 0.012            # sigma of the random walk, per month
+  start_rates: {EURUSD: 1.085, GBPUSD: 1.265}
+  drift: {EURUSD: 0.0006, GBPUSD: -0.0004}
+
+narrative:
+  group: {gm_pct: [0.30, 0.35], ebitda_pct: [0.09, 0.12], ni_pct: [0.04, 0.07]}
+  US01:  {arc: steady_grower,   ni_pct: [0.05, 0.08]}
+  DE01:
+    arc: dip_and_recover
+    ni_pct: [0.04, 0.10]
+    events: [{fy: 2025, ebit_hit_pct: -0.05}]
+  ES01:  {arc: steady,          ni_pct: [0.03, 0.05]}
+  UK01:
+    arc: turnaround
+    ni_pct: [-0.04, 0.03]
+    breakeven_month: 18
+  calibration:
+    tolerance_pp: 0.005         # +/-0.5pp on each configured band
+    max_iterations: 25
+    negative_months_per_year: {min: 1, max: 3}
+    levers: [opex_level, std_cost_ratio, headcount_growth]
+
+defects:
+  unmapped_accounts: true
+  ic_mismatch: true
+  ic_missing_partner_tag: true
+  topside_unreconciled: true
+  cc_reorg_midyear: true
+  allocation_rule_change: true
+  mapping_drift_uk: true
+  dormant_accounts: true
+  late_period13_adjustments: true
+  sku_relaunch_new_code: true
+  unassigned_product_tags: true
+  subledger_reconciling_item: true
+
+outputs: [csv, parquet, duckdb, clickhouse_ddl]
+output_dir: out

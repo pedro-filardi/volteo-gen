@@ -1,0 +1,108 @@
+# Margin profiles, cost structure and the gross-to-net ladder.
+# Electronics: thin gross margin, LARGE gross-to-net gap made of 4+ named components.
+
+margin_profile:            # target gross margin at list, by family group
+  default: 0.34
+  by_category:
+    Headphones: 0.40
+    Speakers: 0.36
+    Chargers: 0.30
+    Power Banks: 0.28
+    Cables: 0.44           # high % margin, tiny absolute ASP
+    Plugs & Switches: 0.33
+    Cameras: 0.31
+    Sensors: 0.35
+    Cases & Mounts: 0.52
+    Services: 0.62
+
+list_price_bands:          # MSRP in group currency before channel discount
+  Headphones: {min: 39, max: 349}
+  Speakers: {min: 49, max: 499}
+  Chargers: {min: 15, max: 89}
+  Power Banks: {min: 25, max: 129}
+  Cables: {min: 7, max: 34}
+  Plugs & Switches: {min: 12, max: 45}
+  Cameras: {min: 39, max: 199}
+  Sensors: {min: 15, max: 59}
+  Cases & Mounts: {min: 9, max: 59}
+  Services: {min: 19, max: 1200}
+
+channel_discount:          # off MSRP — mass retail takes the deepest cut
+  MASS_RETAIL: {min: 0.35, max: 0.45}
+  DISTRIBUTION: {min: 0.25, max: 0.35}
+  ECOM_D2C: {min: 0.05, max: 0.10}
+  B2B: {min: 0.18, max: 0.28}
+
+# Standard cost is set against the price the goods actually SELL at, not MSRP. Without
+# this, a 35-45% mass-retail discount would drive gross margin negative. Blended across
+# the channel mix below.
+expected_blended_channel_discount: 0.30
+
+customer_tier_discount:
+  T1: 0.06
+  T2: 0.03
+  T3: 0.00
+
+gross_to_net:              # each component posts to its own revenue-reduction account
+  volume_rebate:
+    applies_to: [MASS_RETAIL, DISTRIBUTION]
+    tiers: [{threshold: 0, pct: 0.02}, {threshold: 250000, pct: 0.035}, {threshold: 750000, pct: 0.05}]
+    grain: family          # negotiated per family, never per SKU
+  mdf:                     # marketing development funds
+    applies_to: [MASS_RETAIL]
+    pct: {min: 0.02, max: 0.04}
+  returns_reserve:
+    by_category:
+      Headphones: 0.08     # TWS worst
+      Speakers: 0.05
+      Chargers: 0.035
+      Power Banks: 0.04
+      Cables: 0.03
+      Plugs & Switches: 0.045
+      Cameras: 0.06
+      Sensors: 0.04
+      Cases & Mounts: 0.03
+      Services: 0.01
+  price_protection:
+    trigger: msrp_drop
+    pct_of_channel_inventory: 0.35
+
+cost_structure:            # share of total cost base, used to size opex vs payroll
+  cogs: 0.66
+  payroll: 0.19
+  facilities: 0.05
+  marketing: 0.06
+  other_opex: 0.04
+
+cogs_variance:
+  # Absorption swings sign with volume vs plant capacity — unallocatable to product.
+  plant_capacity_units_per_month: 420000
+  absorption_rate_per_unit: 1.85
+  price_variance_pct: {mu: 0.0, sigma: 0.012}
+  usage_variance_pct: {mu: 0.004, sigma: 0.009}
+
+payroll:
+  employer_charge_rate:    # REALISM: same gross salary, very different total cost
+    US: 0.09
+    DE: 0.21
+    ES: 0.30
+    UK: 0.14
+  salary_band_monthly:     # local currency, by function
+    PRD: {min: 3200, max: 5200}
+    SLS: {min: 4000, max: 7500}
+    MKT: {min: 3800, max: 6800}
+    RND: {min: 4800, max: 9000}
+    GA:  {min: 3600, max: 8500}
+    LOG: {min: 2900, max: 4600}
+  merit_raise: {period: P10, pct: 0.031}    # April
+  hiring_step_months: [3, 9, 15, 21, 27, 33]
+
+opex:
+  inflation_annual: 0.028
+  lumpy_share: 0.18        # share of opex arriving as lumpy one-offs
+  marketing_product_campaign_share: 0.60   # rest is brand (no product tag)
+
+transfer_pricing:
+  goods_markup_on_std_cost: 0.25
+  management_fee_pct_of_revenue: 0.015
+  loan_spread_over_reference: 0.02

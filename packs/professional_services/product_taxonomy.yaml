@@ -1,0 +1,68 @@
+# Professional services: the "product" tree is practices -> service lines -> engagement
+# types -> projects. Same shape machinery as consumer electronics; entirely different
+# content. Nothing in the engine knows the difference.
+levels: [practice, service_line, engagement_type, project]
+
+divisions:
+  - key: ADV
+    name: Advisory
+    max_depth: 4                    # no SKU layer — a project IS the leaf
+    weight: 0.42
+    categories:
+      - {key: STR, name: Strategy,   families: [Market Entry, Operating Model]}
+      - {key: FIN, name: Finance,    families: [Close Optimisation, Controls Review]}
+    variant_axes: [region]
+    trend: {Market Entry: 0.06, Operating Model: 0.04,
+            Close Optimisation: 0.09, Controls Review: 0.03}
+
+  - key: TEC
+    name: Technology
+    max_depth: 4
+    weight: 0.38
+    categories:
+      - {key: DAT, name: Data Platform, families: [Migration, Analytics Build]}
+      - {key: INT, name: Integration,   families: [ERP Interfaces]}
+    variant_axes: [region]
+    trend: {Migration: 0.12, Analytics Build: 0.18, ERP Interfaces: -0.02}
+
+  - key: MAN
+    name: Managed Services
+    max_depth: 3                    # ragged: retainers hang off the service line
+    weight: 0.20
+    categories:
+      - {key: RET, name: Retainers, families: [], depth: 2,
+         leaves: [Application Support, Finance BPO]}
+    variant_axes: []
+    trend: {Application Support: 0.07, Finance BPO: 0.05}
+
+word_banks:
+  series_prefix: [ENG, PRJ, WS]
+  audio_series: [A, B, C, D]
+  power_tokens: ["T1", "T2", "T3"]
+  cable_lengths: ["4wk", "8wk", "12wk"]
+  colors: [ONS, OFF, HYB]           # onsite / offshore / hybrid delivery
+  regions: [EU, US, UK, ROW]
+  connectors: [FP, TM]              # fixed-price / time-and-materials
+  smart_tokens: [SUP, RUN, OPT]
+
+lifecycle:
+  # Engagements churn far more slowly than consumer SKUs.
+  median_life_months: {min: 30, max: 54}
+  eol_rate_per_year: 0.06
+  launch_rate_per_year: 0.10
+  ramp_months: 2
+  cannibalisation_of_predecessor: -0.10
+  succession_chains: false
+  abc_shares: {A: 0.25, B: 0.35, C: 0.40}
+  abc_demand_weight: {A: 4.0, B: 1.8, C: 0.7}
+
+price_erosion:
+  # Day rates drift UP with inflation; nothing like electronics price collapse.
+  annual_pct:
+    Advisory: 0.02
+    Technology: 0.03
+    Managed Services: 0.00
+  std_cost_annual_pct: 0.025
+  price_protection: false
+
+special_events: {}

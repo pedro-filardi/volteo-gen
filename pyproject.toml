@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "volteogen"
+version = "0.1.0"
+description = "Config-driven, seeded generator for a hyper-realistic multi-entity enterprise finance dataset"
+requires-python = ">=3.11"
+dependencies = [
+    "polars>=1.0",
+    "pyarrow>=15",
+    "numpy>=1.26",
+    "pyyaml>=6",
+    "duckdb>=1.0",
+]
+
+[project.scripts]
+volteogen = "volteogen.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+filterwarnings = ["ignore::DeprecationWarning"]

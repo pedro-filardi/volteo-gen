@@ -1,0 +1,9 @@
+# XL ~ 200M GL fact rows / ~800M total rows
+scale_preset: XL
+period: {months: 84}
+cardinality:
+  products: {target_leaves: 3200}
+  markets:  {target_leaves: 60}
+  customers: {named_per_entity: 60}
+  cost_centers_total: 90
+volume: {target_gl_rows: 200_000_000}

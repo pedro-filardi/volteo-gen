@@ -1,0 +1,24 @@
+group:
+  gm_pct: [0.34, 0.40]       # higher than hardware; no material cost
+  ebitda_pct: [0.10, 0.15]
+  ebit_pct: [0.08, 0.13]
+  ni_pct: [0.06, 0.10]
+
+entity_role_bands:
+  parent:      {gm_pct: [0.36, 0.42], ni_pct: [0.07, 0.11]}
+  plant:       {gm_pct: [0.32, 0.38], ni_pct: [0.05, 0.09]}
+  distributor: {gm_pct: [0.28, 0.34], ni_pct: [0.04, 0.07]}
+  acquired:    {gm_pct: [0.26, 0.34], ni_pct: [-0.03, 0.05]}
+
+arcs:
+  steady_grower:   {revenue_growth: [0.06, 0.11], margin_drift_pp: [0.0, 0.5]}
+  steady:          {revenue_growth: [0.02, 0.04], margin_drift_pp: [-0.2, 0.2]}
+  dip_and_recover: {revenue_growth: [0.03, 0.07], margin_drift_pp: [-1.2, 1.0]}
+  turnaround:      {revenue_growth: [0.06, 0.12], margin_drift_pp: [0.8, 2.2]}
+  decliner:        {revenue_growth: [-0.05, -0.01], margin_drift_pp: [-1.0, -0.2]}
+
+seasonal_loss_months:
+  likely_periods: [P06, P01]     # December and the July holiday trough
+  per_year: {min: 1, max: 2}
+
+budget_optimism_bias_pp: [0.01, 0.02]

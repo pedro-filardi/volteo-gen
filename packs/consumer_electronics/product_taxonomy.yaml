@@ -1,0 +1,88 @@
+# Consumer-electronics product taxonomy: word banks + tree-shape priors.
+# The engine reads this; it knows nothing about headphones or GaN chargers itself.
+
+levels: [division, category, family, model, sku]
+
+divisions:
+  - key: AUD
+    name: Audio
+    max_depth: 5                 # full depth: division -> category -> family -> model -> sku
+    weight: 0.38                 # share of base demand
+    categories:
+      - {key: HP,  name: Headphones, families: [TWS Earbuds, Over-Ear ANC, Gaming Headsets]}
+      - {key: SPK, name: Speakers,   families: [Portable BT, Soundbars, Smart Speakers]}
+    variant_axes: [color, region]
+    trend: {TWS Earbuds: 0.14, Over-Ear ANC: 0.05, Gaming Headsets: 0.02,
+            Portable BT: -0.03, Soundbars: 0.04, Smart Speakers: 0.08}
+
+  - key: PWR
+    name: Power & Charging
+    max_depth: 5
+    weight: 0.34
+    categories:
+      - {key: CHG, name: Chargers,    families: [GaN Wall, Car Chargers, Wireless Pads]}
+      - {key: PB,  name: Power Banks, families: [Slim, High-Capacity]}
+      - {key: CBL, name: Cables,      families: [USB-C, Lightning, HDMI]}
+    variant_axes: [length, color, connector]   # where the SKU tail explodes
+    sku_tail_multiplier: 2.6
+    trend: {GaN Wall: 0.11, Car Chargers: -0.06, Wireless Pads: 0.07,
+            Slim: 0.03, High-Capacity: 0.05,
+            USB-C: 0.12, Lightning: -0.18, HDMI: -0.02}
+
+  - key: SMH
+    name: Smart Home
+    max_depth: 4                 # ragged: no model layer, families hold SKUs
+    weight: 0.16
+    launch_offset_months: 14     # REALISM: whole division launched mid-history -> no FY24 budget
+    categories:
+      - {key: PLG, name: Plugs & Switches, families: [Smart Plugs]}
+      - {key: CAM, name: Cameras,          families: [Indoor Cams, Outdoor Cams]}
+      - {key: SEN, name: Sensors,          families: [Door Sensors, Motion Sensors]}
+    variant_axes: [region]
+    trend: {Smart Plugs: 0.22, Indoor Cams: 0.19, Outdoor Cams: 0.24,
+            Door Sensors: 0.15, Motion Sensors: 0.15}
+
+  - key: ACC
+    name: Accessories & Services
+    max_depth: 3                 # ragged branch
+    weight: 0.12
+    categories:
+      - {key: CSE, name: Cases & Mounts, families: [Cases, Mounts], depth: 3}
+      - {key: SVC, name: Services,       families: [], depth: 2, leaves: [Extended Warranty, B2B Installation]}
+    variant_axes: [color]
+    trend: {Cases: 0.01, Mounts: 0.03, Extended Warranty: 0.09, B2B Installation: 0.06}
+
+word_banks:
+  series_prefix: [VX, NX, AX, PX, QX]
+  audio_series: [ANC, TWS, SB, PB, GX]
+  power_tokens: ["30W", "45W", "65W", "100W", "140W", "10000mAh", "20000mAh", "27000mAh"]
+  cable_lengths: ["0.5m", "1m", "2m", "3m"]
+  colors: [BLK, WHT, SLV, BLU, GRN]
+  regions: [EU, US, UK, ROW]
+  connectors: [CC, CL, CA, HH]
+  smart_tokens: ["MINI", "PRO", "PLUS", "2K", "4K"]
+
+lifecycle:
+  # Electronics churn harder than most industries (spec 4.1).
+  median_life_months: {min: 18, max: 30}
+  eol_rate_per_year: 0.15
+  launch_rate_per_year: 0.18
+  ramp_months: 3
+  cannibalisation_of_predecessor: -0.40
+  succession_chains: true          # VX-ANC70 -> VX-ANC80
+  abc_shares: {A: 0.20, B: 0.30, C: 0.50}
+  abc_demand_weight: {A: 6.0, B: 2.0, C: 0.6}
+
+price_erosion:
+  # Street price falls from launch; std_cost falls slower -> margin compresses.
+  annual_pct:
+    Audio: -0.18
+    Power & Charging: -0.22
+    Smart Home: -0.15
+    Accessories & Services: -0.05
+  std_cost_annual_pct: -0.09
+  price_protection: true           # credits to retailers when MSRP drops on their stock
+
+special_events:
+  recalled_sku: {division: SMH, stop_sales: true, provision: true}
+  relaunch_under_new_code: {division: AUD}

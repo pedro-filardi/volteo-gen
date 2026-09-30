@@ -1,0 +1,10 @@
+# Evidence has no first-party ClickHouse connector; this uses the community plugin
+# `evidence-connector-clickhouse`. It talks to the HTTP interface (8123).
+#
+# The plugin has no `database` option, so every query below fully qualifies volteo.*.
+name: volteo
+type: clickhouse
+options:
+  url: http://127.0.0.1:8123
+  username: default
+  password: ""

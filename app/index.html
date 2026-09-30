@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Volteo — drill-down income statement</title>
+<style>
+:root{
+  --paper:#FBFBFD; --panel:#F3F5F8; --rule:#E2E5EC; --rule-strong:#C3C9D6;
+  --ink:#14181F; --ink-muted:#5B6577; --ink-faint:#8A93A4;
+  --accent:#0F5F63; --accent-soft:#E4EFEF; --critical:#A8324A; --grp:#F0F4F5;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#0F1216; --panel:#171B21; --rule:#252B34; --rule-strong:#3A424F;
+  --ink:#E6E9EF; --ink-muted:#96A0B1; --ink-faint:#6F7A8B;
+  --accent:#4FB3B8; --accent-soft:#14262B; --critical:#E0798E; --grp:#151C1E;
+}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.5 "Helvetica Neue",Helvetica,Arial,sans-serif;
+     font-variant-numeric:tabular-nums lining-nums;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1400px;margin:0 auto;padding:28px 22px 60px;display:flex;flex-direction:column;gap:18px}
+header{border-bottom:2px solid var(--ink);padding-bottom:14px;display:flex;flex-direction:column;gap:8px}
+h1{font-family:Georgia,serif;font-weight:400;font-size:26px;margin:0;letter-spacing:-.01em}
+.meta{display:flex;flex-wrap:wrap;gap:6px 20px;font-size:12px;color:var(--ink-faint)}
+.meta b{color:var(--ink-muted);font-weight:600}
+.bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.tabs{display:flex;gap:2px;background:var(--panel);border:1px solid var(--rule);padding:2px}
+.tabs button{border:0;background:none;color:var(--ink-muted);font:inherit;font-size:13px;
+  padding:6px 14px;cursor:pointer}
+.tabs button[aria-pressed="true"]{background:var(--accent);color:#fff;font-weight:600}
+.tabs.alt button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+.tabs.src button[aria-pressed="true"]{background:var(--critical);color:#fff}
+.crumb{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:13px}
+.crumb button{border:0;background:none;color:var(--accent);font:inherit;cursor:pointer;padding:2px 4px;
+  text-decoration:underline;text-underline-offset:2px}
+.crumb span.sep{color:var(--ink-faint)}
+.crumb .cur{color:var(--ink);font-weight:700}
+.timing{margin-left:auto;font-size:12px;color:var(--ink-muted);background:var(--accent-soft);
+  border-left:3px solid var(--accent);padding:6px 12px;white-space:nowrap}
+.scroll{overflow-x:auto;border-top:1px solid var(--rule)}
+table{width:100%;border-collapse:collapse;font-size:13px;min-width:40rem}
+th,td{padding:6px 10px;text-align:right;white-space:nowrap}
+th.lbl,td.lbl{text-align:left;position:sticky;left:0;background:var(--paper);min-width:15rem}
+thead th{font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-muted);
+  font-weight:700;border-bottom:1.5px solid var(--ink);padding-bottom:8px;vertical-align:bottom}
+thead th.drill{cursor:pointer;color:var(--accent)}
+thead th.drill:hover{text-decoration:underline}
+thead th .ntype{display:block;font-size:9px;letter-spacing:.06em;color:var(--ink-faint);font-weight:400}
+tbody tr:not(.sub) td.lbl{padding-left:22px;color:var(--ink-muted)}
+tbody tr.sub>*{border-top:1px solid var(--rule-strong);font-weight:700}
+tbody tr.sub td.lbl{color:var(--accent)}
+tbody tr.final>*{border-top:1.5px solid var(--ink);border-bottom:3px double var(--ink)}
+td.neg{color:var(--critical)}
+td.tot{background:var(--grp);font-weight:600}
+.hint{font-size:12.5px;color:var(--ink-muted)}
+.err{background:var(--critical);color:#fff;padding:10px 14px;font-size:13px}
+.loading{opacity:.45;transition:opacity .1s}
+code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11.5px;background:var(--accent-soft);padding:1px 5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Volteo Electronics Group — drill-down income statement</h1>
+    <div class="meta" id="stats"><span>loading…</span></div>
+  </header>
+
+  <div class="bar">
+    <div class="tabs" id="tabs">
+      <button data-dim="cc" aria-pressed="true">Cost centre</button>
+      <button data-dim="product" aria-pressed="false">Product</button>
+      <button data-dim="market" aria-pressed="false">Market</button>
+      <button data-dim="account" aria-pressed="false">Account</button>
+    </div>
+    <div class="tabs src" id="sources">
+      <button data-source="journal" aria-pressed="true">Journal · 1 company</button>
+      <button data-source="ensemble" aria-pressed="false">Ensemble · 295 runs</button>
+    </div>
+    <div class="tabs alt" id="views">
+      <button data-view="mgmt" aria-pressed="true">By nature</button>
+      <button data-view="function" aria-pressed="false">By function</button>
+      <button data-view="gaap" aria-pressed="false">US-GAAP</button>
+    </div>
+    <div class="crumb" id="crumb"></div>
+    <div class="timing" id="timing">&nbsp;</div>
+  </div>
+
+  <p class="hint" id="srcnote"></p>
+  <p class="hint">Click a <strong>column heading</strong> to drill into that branch;
+  click the breadcrumb to go back up. Each query expands the node with
+  <code>dictGetDescendants</code> and filters with <code>IN</code> — never
+  <code>dictIsIn</code>, which forces a full scan.</p>
+
+  <div id="err"></div>
+  <div class="scroll"><table id="tbl"><thead></thead><tbody></tbody></table></div>
+</div>
+
+<script>
+const state = { dim: "cc", node: 0, view: "mgmt", source: "journal" };
+const fmt = v => {
+  if (v == null || Math.abs(v) < 500) return "—";
+  const t = Math.round(v / 1000);
+  return t < 0 ? "(" + Math.abs(t).toLocaleString() + ")" : t.toLocaleString();
+};
+
+async function load() {
+  const tbl = document.getElementById("tbl");
+  tbl.classList.add("loading");
+  document.getElementById("err").innerHTML = "";
+  try {
+    const res = await fetch(`/api/drill?dim=${state.dim}&node=${state.node}&view=${state.view}&source=${state.source}`);
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    render(data);
+  } catch (e) {
+    document.getElementById("err").innerHTML =
+      `<div class="err">Query failed: ${e.message}</div>`;
+  } finally {
+    tbl.classList.remove("loading");
+  }
+}
+
+function render(d) {
+  state.node = d.node.id;
+
+  const note = document.getElementById("srcnote");
+  if (d.fact_source === "ensemble") {
+    note.innerHTML = '<strong>Ensemble source.</strong> 295 independently generated ' +
+      'companies stacked under <code>run_id</code>, so the figures are a sum of 295 sets ' +
+      'of books and read in the trillions. It carries an aggregate projection, which is ' +
+      'why it answers in ~10&nbsp;ms. Useful for measuring access paths, not for reading ' +
+      'as a company.';
+  } else if (d.view === "gaap") {
+    note.innerHTML = '<strong>FASB StatementOfIncome.</strong> Rolled up with the ' +
+      "taxonomy's SIGNED weights — 61 of its 531 arcs carry &minus;1, so a plain " +
+      '<code>SUM(amount)</code> over this tree returns a plausible wrong number. ' +
+      'Concepts are ranked by magnitude, not statement order.';
+  } else if (d.view === "function") {
+    note.innerHTML = '<strong>By-function view.</strong> The same salary account becomes ' +
+      '"COGS - labour", "R&amp;D" or "G&amp;A" depending only on the cost centre it was ' +
+      'posted to — resolved at query time through <code>dict_class_function</code>.';
+  } else if (d.source === "subledger") {
+    note.innerHTML = '<strong>Below family grain — reading the sub-ledger.</strong> ' +
+      'The general ledger carries product only to <em>family</em>; SKU detail exists ' +
+      'solely in <code>fact_sales_lines</code>, so only revenue, COGS and gross profit ' +
+      'exist at this level.';
+  } else {
+    note.textContent = "";
+  }
+
+  document.getElementById("timing").textContent =
+    `${d.elapsed_ms.toLocaleString()} ms · ${d.children.length} branch${d.children.length === 1 ? "" : "es"}`;
+
+  const crumb = document.getElementById("crumb");
+  crumb.innerHTML = "";
+  d.breadcrumb.forEach((c, i) => {
+    if (i) crumb.insertAdjacentHTML("beforeend", '<span class="sep">›</span>');
+    if (i === d.breadcrumb.length - 1) {
+      crumb.insertAdjacentHTML("beforeend", `<span class="cur">${c.name}</span>`);
+    } else {
+      const b = document.createElement("button");
+      b.textContent = c.name;
+      b.onclick = () => { state.node = c.id; load(); };
+      crumb.appendChild(b);
+    }
+  });
+
+  const thead = document.querySelector("#tbl thead");
+  const kids = d.children;
+  thead.innerHTML = "";
+  const tr = document.createElement("tr");
+  tr.insertAdjacentHTML("beforeend", '<th class="lbl">USD thousands</th>');
+  kids.forEach(k => {
+    const th = document.createElement("th");
+    th.innerHTML = `${k.name}<span class="ntype">${k.node_type}${k.has_children ? " ▸" : ""}</span>`;
+    if (k.has_children) {
+      th.className = "drill";
+      th.title = `Drill into ${k.name}`;
+      th.onclick = () => { state.node = k.id; load(); };
+    }
+    tr.appendChild(th);
+  });
+  tr.insertAdjacentHTML("beforeend", `<th>${d.node.name}<span class="ntype">total</span></th>`);
+  thead.appendChild(tr);
+
+  const tbody = document.querySelector("#tbl tbody");
+  tbody.innerHTML = "";
+  d.lines.forEach(line => {
+    const row = document.createElement("tr");
+    if (line.is_subtotal) row.classList.add("sub");
+    if (line.label === "Net income") row.classList.add("final");
+    row.insertAdjacentHTML("beforeend", `<td class="lbl">${line.label}</td>`);
+    kids.forEach(k => {
+      const v = line.values[String(k.id)];
+      row.insertAdjacentHTML("beforeend",
+        `<td class="${v < 0 ? "neg" : ""}">${fmt(v)}</td>`);
+    });
+    row.insertAdjacentHTML("beforeend",
+      `<td class="tot ${line.total < 0 ? "neg" : ""}">${fmt(line.total)}</td>`);
+    tbody.appendChild(row);
+  });
+}
+
+document.getElementById("sources").addEventListener("click", e => {
+  const btn = e.target.closest("button");
+  if (!btn) return;
+  [...e.currentTarget.children].forEach(b =>
+    b.setAttribute("aria-pressed", String(b === btn)));
+  state.source = btn.dataset.source;
+  state.node = 0;
+  loadStats();
+  load();
+});
+
+document.getElementById("views").addEventListener("click", e => {
+  const btn = e.target.closest("button");
+  if (!btn) return;
+  [...e.currentTarget.children].forEach(b =>
+    b.setAttribute("aria-pressed", String(b === btn)));
+  state.view = btn.dataset.view;
+  load();
+});
+
+document.getElementById("tabs").addEventListener("click", e => {
+  const btn = e.target.closest("button");
+  if (!btn) return;
+  [...e.currentTarget.children].forEach(b =>
+    b.setAttribute("aria-pressed", String(b === btn)));
+  state.dim = btn.dataset.dim;
+  state.node = 0;
+  load();
+});
+
+function loadStats() {
+  fetch(`/api/stats?source=${state.source}`).then(r => r.json()).then(s => {
+    document.getElementById("stats").innerHTML =
+      `<span><b>Table</b> ${s.table || "?"}</span>` +
+      `<span><b>Rows</b> ${Number(s.rows || 0).toLocaleString()}</span>` +
+      `<span><b>On disk</b> ${s.on_disk || "?"}</span>` +
+      `<span><b>Engine</b> ClickHouse MergeTree + HASHED hierarchical dictionaries</span>`;
+  }).catch(() => {});
+}
+loadStats();
+
+load();
+</script>
+</body>
+</html>

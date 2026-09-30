@@ -1,0 +1,9 @@
+# M ~ 2M GL fact rows / ~8M total rows  (spec default)
+scale_preset: M
+period: {months: 36}
+cardinality:
+  products: {target_leaves: 240}
+  markets:  {target_leaves: 23}
+  customers: {named_per_entity: 12}
+  cost_centers_total: 35
+volume: {target_gl_rows: 2_000_000}

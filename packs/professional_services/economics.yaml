@@ -1,0 +1,90 @@
+# Day rates, not unit prices. Payroll dominates the cost base (spec 2.1: 60-70%).
+margin_profile:
+  default: 0.38
+  by_category:
+    Strategy: 0.48
+    Finance: 0.40
+    Data Platform: 0.36
+    Integration: 0.34
+    Retainers: 0.26        # managed services run thinner
+
+list_price_bands:          # blended DAY RATE, not a unit price
+  Strategy: {min: 1400, max: 2600}
+  Finance: {min: 1100, max: 1900}
+  Data Platform: {min: 950, max: 1700}
+  Integration: {min: 900, max: 1500}
+  Retainers: {min: 700, max: 1200}
+
+# Services discount far less than hardware: there is no channel taking 40% off.
+expected_blended_channel_discount: 0.08
+
+channel_discount:
+  MASS_RETAIL: {min: 0.10, max: 0.16}     # framework agreements
+  DISTRIBUTION: {min: 0.08, max: 0.14}    # subcontracted through a partner
+  ECOM_D2C: {min: 0.00, max: 0.04}
+  B2B: {min: 0.05, max: 0.12}
+
+customer_tier_discount:
+  T1: 0.05
+  T2: 0.02
+  T3: 0.00
+
+gross_to_net:
+  # No returns, no MDF, no price protection — you cannot return consumed hours.
+  volume_rebate:
+    applies_to: [MASS_RETAIL, DISTRIBUTION]
+    tiers: [{threshold: 0, pct: 0.01}, {threshold: 500000, pct: 0.02}]
+    grain: family
+  mdf:
+    applies_to: []
+    pct: {min: 0.0, max: 0.0}
+  returns_reserve:
+    by_category:
+      Strategy: 0.004        # write-offs of unbillable time, not returns
+      Finance: 0.005
+      Data Platform: 0.008
+      Integration: 0.008
+      Retainers: 0.003
+  price_protection:
+    trigger: msrp_drop
+    pct_of_channel_inventory: 0.0
+
+cost_structure:
+  # Delivery labour IS the cost of sales here, so it sits in cogs; payroll below is the
+  # non-billable base (sales, marketing, G&A). Together they are ~66% of the cost base,
+  # which is what spec 2.1 means by payroll-dominated.
+  cogs: 0.54
+  payroll: 0.22
+  facilities: 0.07
+  marketing: 0.05
+  other_opex: 0.12
+
+cogs_variance:
+  # There is no plant and no absorption. The applicability override disables the class
+  # entirely; these values exist only so the config shape stays uniform.
+  plant_capacity_units_per_month: 1
+  absorption_rate_per_unit: 0.0
+  price_variance_pct: {mu: 0.0, sigma: 0.0}
+  usage_variance_pct: {mu: 0.0, sigma: 0.0}
+
+payroll:
+  employer_charge_rate: {US: 0.09, DE: 0.21, ES: 0.30, UK: 0.14}
+  salary_band_monthly:
+    PRD: {min: 5200, max: 9500}      # delivery consultants
+    SLS: {min: 5000, max: 9000}
+    MKT: {min: 4200, max: 7000}
+    RND: {min: 5500, max: 10500}
+    GA:  {min: 4000, max: 9000}
+    LOG: {min: 3200, max: 5200}
+  merit_raise: {period: P10, pct: 0.042}
+  hiring_step_months: [2, 5, 8, 11, 14, 17, 20, 23]
+
+opex:
+  inflation_annual: 0.031
+  lumpy_share: 0.10
+  marketing_product_campaign_share: 0.35
+
+transfer_pricing:
+  goods_markup_on_std_cost: 0.10     # cross-border staff secondment
+  management_fee_pct_of_revenue: 0.02
+  loan_spread_over_reference: 0.02

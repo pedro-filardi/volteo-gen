@@ -1,0 +1,31 @@
+{
+  "name": "volteo-evidence",
+  "version": "0.1.0",
+  "description": "Financial statements for the Volteo synthetic dataset, rendered from ClickHouse or DuckDB",
+  "scripts": {
+    "build": "evidence build",
+    "build:strict": "evidence build:strict",
+    "dev": "evidence dev --open /",
+    "test": "evidence build",
+    "sources": "evidence sources",
+    "sources:strict": "evidence sources --strict",
+    "preview": "evidence preview"
+  },
+  "engines": {
+    "npm": ">=7.0.0",
+    "node": ">=18.0.0"
+  },
+  "type": "module",
+  "dependencies": {
+    "@evidence-dev/core-components": "^5.4.2",
+    "@evidence-dev/duckdb": "^2.0.1",
+    "@evidence-dev/evidence": "^40.1.8",
+    "evidence-connector-clickhouse": "^0.0.2"
+  },
+  "//": "Evidence has no first-party ClickHouse connector. See sources/volteo_clickhouse/ for the two supported paths: the community plugin `evidence-connector-clickhouse`, or DuckDB reading ClickHouse-exported Parquet (the default here).",
+  "overrides": {
+    "jsonwebtoken": "9.0.0",
+    "trim@<0.0.3": ">0.0.3",
+    "axios": "^1.7.4"
+  }
+}

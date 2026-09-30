@@ -1,0 +1,35 @@
+# No goods move. Cross-border work is a services recharge, not a transfer of inventory.
+archetypes: [services, loan]
+
+flows:
+  - key: SECONDMENT_DE_ES
+    type: services
+    seller: DE01
+    buyer: [ES01]
+    basis: pct_of_revenue
+    frequency: monthly
+    accounts: {seller: ic_service_income, buyer: ic_service_expense}
+  - key: MGMT_FEE
+    type: services
+    seller: US01
+    buyer: [DE01, ES01, UK01]
+    basis: pct_of_revenue
+    frequency: quarterly
+    accounts: {seller: ic_service_income, buyer: ic_service_expense}
+  - key: LOAN_US_UK
+    type: loan
+    lender: US01
+    borrower: UK01
+    principal: 2000000
+    principal_ccy: GBP
+    reference_rate: SONIA
+    frequency: monthly
+    accounts: {lender: ic_interest_income, borrower: ic_interest_expense}
+
+ic_inventory:
+  # No inventory means no unrealised profit to eliminate — a whole elimination
+  # disappears for this industry.
+  closing_stock_share: {}
+
+dividend:
+  - {payer: ES01, receiver: US01, fy: 2025, amount_pct_of_prior_ni: 0.40}

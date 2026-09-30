@@ -1,0 +1,28 @@
+# Typical margin bands for this industry (spec 6.5). config/default.yaml may override
+# per entity; these are the fallbacks the calibrator uses when it doesn't.
+
+group:
+  gm_pct: [0.30, 0.35]      # thinner than industrials
+  ebitda_pct: [0.09, 0.12]
+  ebit_pct: [0.06, 0.09]
+  ni_pct: [0.04, 0.07]
+
+entity_role_bands:
+  parent:       {gm_pct: [0.32, 0.38], ni_pct: [0.05, 0.08]}
+  plant:        {gm_pct: [0.26, 0.32], ni_pct: [0.04, 0.10]}   # transfer-price margin
+  distributor:  {gm_pct: [0.16, 0.22], ni_pct: [0.03, 0.05]}   # thin
+  acquired:     {gm_pct: [0.20, 0.28], ni_pct: [-0.04, 0.03]}
+
+arcs:
+  steady_grower:  {revenue_growth: [0.04, 0.07], margin_drift_pp: [0.0, 0.4]}
+  steady:         {revenue_growth: [0.01, 0.03], margin_drift_pp: [-0.2, 0.2]}
+  dip_and_recover: {revenue_growth: [0.02, 0.06], margin_drift_pp: [-1.5, 1.2]}
+  turnaround:     {revenue_growth: [0.05, 0.10], margin_drift_pp: [0.8, 2.5]}
+  decliner:       {revenue_growth: [-0.06, -0.01], margin_drift_pp: [-1.2, -0.2]}
+
+seasonal_loss_months:
+  # Monthly losses inside profitable years are normal; low season is P07-P08.
+  likely_periods: [P07, P08, P09]
+  per_year: {min: 1, max: 3}
+
+budget_optimism_bias_pp: [0.01, 0.02]   # budget NI 1-2pp above actual

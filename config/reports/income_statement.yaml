@@ -1,0 +1,47 @@
+# Report layout as DATA, not code.
+#
+# This is what lets a BI tool render a financial statement without anyone writing
+# statement logic into the dashboard. The generator turns this file into two tables:
+#
+#   dim_report_line     one row per line: label, order, indent, subtotal flag
+#   bridge_report_line  (line -> account_class) with the sign already multiplied in
+#
+# A subtotal is NOT computed procedurally: it maps to every account_class underneath it
+# via the bridge, exactly like the US-GAAP calculation tree. So the dashboard query is
+# a single GROUP BY that never changes when the layout does.
+#
+# `sign` handles presentation: fact_gl stores revenue as a credit (negative) and
+# expenses as a debit (positive). Multiplying by -1 makes revenue read positive and
+# expenses negative, so a column simply sums to net income.
+
+report_id: IS_MGMT
+name: Management income statement
+description: Income statement by nature, group management view
+measure: amount_gc_actual_rates      # swap for amount_gc_budget_rates -> constant currency
+unit: thousands
+
+lines:
+  - {id: REV_GROSS,  label: Gross revenue,                 maps: [revenue_trade, revenue_ic], sign: -1}
+  - {id: REV_RED,    label: Revenue reductions,            maps: [revenue_reduction], sign: -1}
+  - {id: NET_REV,    label: Net revenue,                   children: [REV_GROSS, REV_RED]}
+
+  - {id: COGS_STD,   label: COGS - standard cost,          maps: [cogs_standard, cogs_ic], sign: -1}
+  - {id: COGS_VAR,   label: COGS - production variances,   maps: [cogs_variance],  sign: -1}
+  - {id: GROSS_PROFIT, label: Gross profit,                children: [NET_REV, COGS_STD, COGS_VAR]}
+
+  - {id: OPEX_PAY,   label: Personnel,                     maps: [payroll],     sign: -1}
+  - {id: OPEX_MKT,   label: Marketing,                     maps: [marketing],   sign: -1}
+  - {id: OPEX_FAC,   label: Facilities,                    maps: [facilities],  sign: -1}
+  - {id: OPEX_OTH,   label: Other operating expense,       maps: [other_opex],  sign: -1}
+  - {id: OPEX_ALLOC, label: Allocated costs,               maps: [allocation],  sign: -1}
+  - {id: EBITDA,     label: EBITDA,
+     children: [GROSS_PROFIT, OPEX_PAY, OPEX_MKT, OPEX_FAC, OPEX_OTH, OPEX_ALLOC]}
+
+  - {id: DEPR,       label: Depreciation & amortisation,   maps: [depreciation], sign: -1}
+  - {id: EBIT,       label: EBIT,                          children: [EBITDA, DEPR]}
+
+  - {id: IC_FEE,     label: Management fees (IC),          maps: [ic_service], sign: -1}
+  - {id: INTEREST,   label: Interest,                      maps: [interest],   sign: -1}
+  - {id: ONE_OFF,    label: One-off items,                 maps: [one_off],    sign: -1}
+  - {id: NET_INCOME, label: Net income,
+     children: [EBIT, IC_FEE, INTEREST, ONE_OFF]}

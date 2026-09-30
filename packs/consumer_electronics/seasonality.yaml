@@ -1,0 +1,31 @@
+# Demand seasonality by fiscal period. FY runs Jul(P01) .. Jun(P12).
+# P05 = Nov, P06 = Dec -> Black Friday / Christmas.
+
+drivers:
+  sales: units_by_sku_market_month
+  payroll: headcount_by_cost_center
+  facilities: energy_usage_by_site
+  production: machine_hours_by_plant
+
+# Multiplicative factors, indexed P01..P12. Mean ~1.0 across the year.
+curves:
+  Audio:                  [0.86, 1.02, 1.04, 1.10, 1.78, 1.62, 0.72, 0.74, 0.88, 0.94, 0.92, 0.88]
+  Smart Home:             [0.82, 0.96, 1.00, 1.12, 1.85, 1.70, 0.70, 0.72, 0.86, 0.96, 0.94, 0.90]
+  Power & Charging:       [0.94, 1.06, 1.08, 1.04, 1.32, 1.24, 0.86, 0.88, 0.96, 1.00, 0.98, 0.96]
+  Accessories & Services: [0.96, 1.04, 1.05, 1.02, 1.22, 1.18, 0.90, 0.92, 0.97, 1.00, 0.99, 0.98]
+
+notes:
+  back_to_school: {periods: [P02, P03], uplift: 0.06}
+  post_holiday_trough: {periods: [P07, P08], factor: -0.25}
+  promo_event:                 # Prime-Day-like
+    period: P01
+    uplift: 0.45
+    divisions: [Audio, Power & Charging]
+
+# Energy runs inverse to sales seasonality (heating in the northern winter).
+energy_curve: [0.80, 0.86, 0.98, 1.14, 1.28, 1.34, 1.30, 1.18, 1.02, 0.90, 0.82, 0.78]
+energy_invoice_lag_months: 2
+
+demand_noise:
+  dist: lognormal
+  sigma: 0.15                    # electronics demand is noisier than most industries

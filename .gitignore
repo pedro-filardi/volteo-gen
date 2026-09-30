@@ -1,0 +1,12 @@
+out/
+evidence/node_modules/
+evidence/build/
+evidence/.evidence/template/
+evidence/.evidence/
+evidence/.vscode/
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+*.egg-info/
+.DS_Store

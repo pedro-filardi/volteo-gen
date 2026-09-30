@@ -1,0 +1,6 @@
+account_class,dimension,override,reason
+cogs_variance,posting_grain,none,"No inventory and no plant: a professional services firm has no absorption or usage variance to post. The class is disabled outright rather than posted as zero."
+cogs_standard,subledger_product_grain,project,"The leaf is a project, not a SKU."
+cogs_standard,gl_product_grain,engagement_type,"GL summarises to engagement type."
+revenue_trade,subledger_product_grain,project,"Revenue is billable hours on a project."
+revenue_trade,gl_product_grain,engagement_type,

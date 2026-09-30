@@ -1,0 +1,20 @@
+account_class,product,market,customer,cost_center,ic_partner,posting_grain,gl_product_grain,subledger_product_grain,notes
+revenue_trade,applicable,applicable,applicable,na,conditional_affiliate,invoice_line_to_monthly_summary,family,sku,"SKU in subledger; Family in GL. Market = subterritory."
+revenue_reduction,applicable,applicable,applicable,na,na,monthly_accrual,family,family,"Rebates/MDF/returns negotiated per family, NOT per sku. Named customers only."
+revenue_ic,na,na,na,na,mandatory,monthly,na,na,"Intercompany revenue at group level. Carries a partner; no product/market/customer."
+cogs_ic,na,na,na,na,mandatory,monthly,na,na,"Intercompany cost at group level."
+cogs_standard,applicable,na,na,na,conditional_affiliate,ships_with_invoice,family,sku,"Costs have no market."
+cogs_variance,na,na,na,applicable,na,monthly,na,na,"REALISM: price/usage/absorption variances post at PLANT level and are unallocatable to product."
+freight_out,applicable,applicable,na,applicable,na,monthly,family,family,"Family only; market at region grain; logistics CC."
+payroll,na,na,na,mandatory,na,monthly_per_cc,na,na,"Cost centre is mandatory. Geography derives from the cost centre master, not from a ledger column."
+facilities,na,na,na,mandatory,na,monthly,na,na,"Site-level CC; the site itself is a cost centre attribute. Energy has a 2-month invoice lag."
+marketing,conditional,na,na,mandatory,na,monthly_lumpy,family,family,"Family for product campaigns (60%); ~NA~ for brand (40%). Geography is NOT on the ledger: it comes from the cost centre master (site/country/geo_region and serves_market_node_id)."
+depreciation,na,na,na,mandatory,na,monthly_step,na,na,"Owning CC; flat with step-changes at capex."
+ic_service,na,na,na,na,mandatory,quarterly,na,na,"Management fees / IC services."
+interest,na,na,na,na,conditional_loan,monthly,na,na,"IC loan interest carries the partner; external does not."
+tax,na,na,na,na,na,quarterly,na,na,
+fx_result,na,na,na,na,na,monthly,na,na,
+allocation,na,na,na,mandatory,na,monthly_rule_driven,na,na,"Charge-out on pool CC, charge-in on target PC. Sum = 0 per period."
+other_opex,na,na,na,mandatory,na,monthly,na,na,
+one_off,na,na,na,applicable,na,event,na,na,"Restructuring, acquisition fees, insurance claim. Flagged in fact_gl."
+balance_sheet,na,na,na,na,conditional_affiliate,monthly_balance,na,na,"IC balances carry a partner; others do not."

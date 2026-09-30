@@ -1,0 +1,24 @@
+# Utilisation-driven, not retail-driven: the summer holiday trough and the December
+# slowdown dominate. No Black Friday anywhere.
+drivers:
+  sales: billable_hours_by_project_month
+  payroll: headcount_by_cost_center
+  facilities: energy_usage_by_site
+  production: machine_hours_by_plant
+
+curves:
+  Advisory:         [0.78, 0.92, 1.08, 1.10, 1.06, 0.82, 1.04, 1.10, 1.08, 1.06, 1.02, 0.94]
+  Technology:       [0.84, 0.94, 1.06, 1.08, 1.04, 0.86, 1.02, 1.08, 1.06, 1.04, 1.02, 0.96]
+  Managed Services: [0.98, 1.00, 1.01, 1.01, 1.00, 0.96, 1.00, 1.01, 1.01, 1.01, 1.00, 1.01]
+
+notes:
+  back_to_school: {periods: [P03, P04], uplift: 0.03}
+  post_holiday_trough: {periods: [P06], factor: -0.14}
+  promo_event: {period: P01, uplift: 0.0, divisions: []}
+
+energy_curve: [0.86, 0.90, 0.98, 1.10, 1.20, 1.24, 1.20, 1.12, 1.02, 0.94, 0.88, 0.86]
+energy_invoice_lag_months: 2
+
+demand_noise:
+  dist: lognormal
+  sigma: 0.09          # utilisation is far steadier than consumer demand
